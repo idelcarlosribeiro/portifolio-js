@@ -215,14 +215,10 @@ nav{
 }
 
 .menu-overlay, .menu-overlay-content{
-    position: fixed;
-    top: 0;
-    left: 0;
+    
     width: 100%;
     height: 100vh;
-    min-height: 500px;
     color: var(--fg);
-    overflow: hidden;
     z-index: 1;
 }
 .menu-overlay{
