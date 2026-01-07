@@ -371,7 +371,7 @@ nav{
 .container-header::after{
   content: "";
   width: 100%;
-  height: 100%;
+  height: 100vh;
   min-height: 500px;
   background-color: rgba(0, 0, 0, 0.711);
   position: absolute;
@@ -379,7 +379,7 @@ nav{
 }
 .container-text-herader{
   width: 100%;
-  height: 100%;
+  height: 100vh;
   min-height: 500px;
   position: absolute;
   z-index: 2;
