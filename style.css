@@ -222,6 +222,9 @@ nav{
     z-index: 1;
 }
 .menu-overlay{
+  display: flex;
+  justify-content: center;
+  align-items: center;
     background-color: var(--menu-bg);
     clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%);
     will-change: clip-path;
@@ -233,46 +236,32 @@ nav{
     pointer-events: all;
 }
 .menu-media-warapper{
-    flex: 2;
-    opacity: 0;
-    will-change: opacity;
-}
-.menu-media-warapper img{
-    opacity: 0.25;
+    width: 70%;
+    background-color: brown;
+    height: 100%;
 }
 .menu-content-wrapper{
   width: 100%;
   height: 100dvh;
-    flex: 3;
-    position: relative;
-    display: flex;
+  display: flex;
 }
 .menu-content-main{
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-.menu-footer{
-    margin: 0 auto;
+  display: flex;
+  height: 100%;
+  background-color: #0988FF;
 }
 .menu-content-main, .menu-footer{
-    width: 75%;
+    width: 100%;
     padding: 2rem;
     display: flex;
-    align-items: flex-end;
+    justify-content: center;
+    align-items: center;
     gap: 2rem;
 }
 .menu-col{
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-}
-.menu-col:nth-child(1){
-    flex: 3;
-}
-.menu-col:nth-child(2){
-    flex: 2;
 }
 .menu-link a {
     font-size: 3.5rem;
