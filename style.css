@@ -128,6 +128,12 @@ nav img{
     height: 100%;
     object-fit: cover;
 }
+nav h1{
+    font-size: 7rem;
+    font-weight: 500;
+    letter-spacing: -0.2rem;
+    line-height: 1;
+}
  nav p{
     font-size: 0.95rem;
     font-weight: 500;
@@ -135,7 +141,7 @@ nav img{
 nav a{
     text-decoration: none;
     color: var(--fg);
-    font-size: 1.5vw;
+    font-size: 1.5rem;
     font-weight: 500;
 }
 nav{
@@ -198,7 +204,7 @@ nav{
     height: 1.25px;
     background-color: var(--fg);
     transition: all 0.75s cubic-bezier(0.87, 0, 0.13, 1);
-    
+    transform-origin: center;
     will-change: trasnform;
 }
 .menu-hamburger-icon span:nth-child(1){
@@ -215,16 +221,16 @@ nav{
 }
 
 .menu-overlay, .menu-overlay-content{
-    
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 100vh;
+    height: 100svh;
     color: var(--fg);
+    overflow: hidden;
     z-index: 1;
 }
 .menu-overlay{
-  display: flex;
-  justify-content: center;
-  align-items: center;
     background-color: var(--menu-bg);
     clip-path: polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%);
     will-change: clip-path;
@@ -236,32 +242,44 @@ nav{
     pointer-events: all;
 }
 .menu-media-warapper{
-    width: 70%;
-    background-color: brown;
-    height: 100%;
+    flex: 2;
+    opacity: 0;
+    will-change: opacity;
+}
+.menu-media-warapper img{
+    opacity: 0.25;
 }
 .menu-content-wrapper{
-  width: 100%;
-  height: 100dvh;
-  display: flex;
+    flex: 3;
+    position: relative;
+    display: flex;
 }
 .menu-content-main{
-  display: flex;
-  height: 100%;
-  background-color: #0988FF;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+.menu-footer{
+    margin: 0 auto;
 }
 .menu-content-main, .menu-footer{
-    width: 100%;
+    width: 75%;
     padding: 2rem;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    align-items: flex-end;
     gap: 2rem;
 }
 .menu-col{
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+}
+.menu-col:nth-child(1){
+    flex: 3;
+}
+.menu-col:nth-child(2){
+    flex: 2;
 }
 .menu-link a {
     font-size: 3.5rem;
@@ -276,15 +294,24 @@ nav{
     will-change: transform;
 }
 @media (max-width: 1000px){
-    
-    
+    h1{
+        font-size: 3rem;
+        letter-spacing: -0.05rem;
+    }
+    section h1{
+        width: 100%;
+    }
     .menu-media-warapper{
         display: none;
     }
     .menu-content-main, .menu-footer{
         width: 100%;
     }
-    .menu-link a{ font-size: 10vw;}
+    .menu-content-main{
+        top: 50%;
+        flex-direction: column;
+        align-items: flex-start;
+    }
     .menu-link{
         font-size: 3rem;
     }
@@ -334,8 +361,8 @@ nav{
 /*Container header*/
 .container-header{
     width: 100%;
-    height: 100dvh;
-    min-height: 400px;
+    height: 100vh;
+    min-height: 510px;
     background-image: url(img/bannerfundo.jpg);
     background-position: center;
     background-repeat: no-repeat;
@@ -344,16 +371,16 @@ nav{
 .container-header::after{
   content: "";
   width: 100%;
-  height: 100dvh;
-  min-height: 400px;
+  height: 100%;
+  min-height: 500px;
   background-color: rgba(0, 0, 0, 0.711);
   position: absolute;
   z-index: 1;
 }
 .container-text-herader{
   width: 100%;
-  height: 100dvh;
-  min-height: 400px;
+  height: 100%;
+  min-height: 500px;
   position: absolute;
   z-index: 2;
 }
@@ -1351,10 +1378,6 @@ footer{
     top: 50%;
     left: calc(50% + 5vw);
 }
-.menu-content-main{
-        flex-direction: column;
-        align-items: flex-start;
-    }
 
     /*  Menu  */
     .container-diretitos-autorais{ width: 240px;}
@@ -1453,7 +1476,7 @@ footer{
 }
 
     /*  Menu  */
-    .menu-logo-mobille{display: block; width: 100%; height: 100%; font-size: 1.5rem; background: linear-gradient(to right, #0988FF 15%, #999999 30%);
+    .menu-logo-mobille{width: 100%; height: 100%; font-size: 1.5rem; background: linear-gradient(to right, #0988FF 15%, #999999 30%);
   background-clip: text;
   -webkit-text-fill-color: transparent;}
     .menu-logo{ display: none;}
@@ -1462,7 +1485,7 @@ footer{
     /* Fim introdução*/
 
     /* hader */
-    .container-header{ height: 100vh;}
+    .container-header{ min-height: 500px;}
     .conainer-texto-meio h1{font-size: 9vw;}
     .texto1 h2{font-size: 5vw;}
     .texto1 p {font-size: 2vw; width: 60%;}
