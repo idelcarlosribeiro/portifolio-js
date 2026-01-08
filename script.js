@@ -382,7 +382,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .to(
           menuOverlayContainer,
           {
-            yPercent: -50,
+            yPercent: 0,
             duration: 1,
             ease: "hop",
           },
@@ -391,7 +391,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .to(
           menuToggleLabel,
           {
-            y: "0%",
+            y: "100%",
             duration: 1,
             ease: "hop",
           },
