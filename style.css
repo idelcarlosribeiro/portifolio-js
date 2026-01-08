@@ -241,6 +241,8 @@ nav{
     opacity: 0.25;
 }
 .menu-content-wrapper{
+  width: 100%;
+  height: 100dvh;
     flex: 3;
     position: relative;
     display: flex;
