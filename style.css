@@ -255,10 +255,9 @@ nav{
     display: flex;
 }
 .menu-content-main{
-    
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .menu-footer{
     margin: 0 auto;
