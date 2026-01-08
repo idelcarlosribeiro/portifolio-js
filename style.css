@@ -198,7 +198,7 @@ nav{
     height: 1.25px;
     background-color: var(--fg);
     transition: all 0.75s cubic-bezier(0.87, 0, 0.13, 1);
-    transform-origin: center;
+    
     will-change: trasnform;
 }
 .menu-hamburger-icon span:nth-child(1){
