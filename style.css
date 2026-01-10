@@ -1560,7 +1560,7 @@ footer{
     .texto-conhecimento h2{ font-size: 2rem;}
     .texto-conhecimento h2 br {display: none;}
     .texto-conhecimento p{ font-size: .9rem; width: fit-content;}
-    .texto-conhecimento{ width: 100%;}
+    .info-descricao{ width: 100%; margin-left: -10%;}
     .cards-conhecimento { height: auto;  }
     .container-cards-conhecimento{margin-bottom: 5%;}
     .logo { width: 10vw; height: 10vw; }
