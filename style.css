@@ -614,17 +614,34 @@ grid-row-gap: 0px;
   height: 13vw;
   min-height: 150px;
   border-radius: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #ffffff19;
   background-color: #171717;
 }
-.img-list {width: 70%;
-height: 70%;
-background-size: cover;
+.img-item {
+  width: 90%;
+  height: 85%;
+  border-radius: 15px;
   background-position: center;
-  background-repeat: no-repeat;}
-.img-1{background-image: url(img/6763fc79e17d7e5256ee22a9_Preview\ Image\ 06.webp);}
-.img-2{background-image: url(img/6763fc784a1ce4ad68ea658f_Preview\ Image\ 05.webp);}
-.img-3{background-image: url(img/6763fc78dbe2d60c7981de7a_Preview\ Image\ 04.webp);}
-.img-4{background-image: url(img/6763fc784a1ce4ad68ea658f_Preview\ Image\ 05.webp);}
+  background-size: cover;
+  background-repeat: no-repeat;
+  border: 1px solid #ffffff1e;
+  position: relative;
+}
+.img-item::after{
+  border-radius: 15px;
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #0505054b;
+}
+.img1{background-image: url(img/projeto-1.webp);}
+.img2{background-image: url(img/projeto-4.webp);}
+.img3{background-image: url(img/projeto-2.webp);}
+.img4{background-image: url(img/projeto-3.webp);}
 @keyframes autoRun{
     from{
         left: 100%;
@@ -1001,7 +1018,7 @@ background-size: cover;
 }
 
 .main-title {
-    font-size: 35vw; /* O tamanho que você pediu */
+    font-size: 30vw; /* O tamanho que você pediu */
     white-space: nowrap; /* Impede o texto de quebrar linha */
     line-height: 1;
     color: aliceblue;
