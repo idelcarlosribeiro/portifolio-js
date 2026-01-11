@@ -631,7 +631,7 @@ grid-row-gap: 0px;
   position: relative;
 }
 .img-item::after{
-  border-radius: 15px;
+  border-radius: 15px ;
   content: "";
   position: absolute;
   width: 100%;
