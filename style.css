@@ -1564,6 +1564,7 @@ footer{
       border-radius: 5px;
       min-height: 20vw;
     }
+    .card{display: none;}
     .img-item::after{border-radius: 5px;}
     .img-item {border-radius: 5px;}
     
