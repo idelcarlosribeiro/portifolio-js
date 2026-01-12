@@ -1564,7 +1564,6 @@ footer{
       border-radius: 5px;
       min-height: 20vw;
     }
-    .card{display: none;}
     .img-item::after{border-radius: 5px;}
     .img-item {border-radius: 5px;}
     
@@ -1628,6 +1627,7 @@ footer{
     .link-info-descricao { width: 100%; }
 
     /*Fucionalidade*/
+    .card{display: none;}
     .card { width: 40vw; height: 50vw;}
     .card h4 {font-size: 1rem;}
     #card-1 { left: 20%; top: 50%; }
