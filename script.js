@@ -596,18 +596,7 @@ scrollElements.forEach((el) => {
 
 
 // Não precisa de forEach se for usar stagger
-gsap.to(".card-modelos", {
-  height: "30vw",
-  duration: 0.5,
-  ease: "power2.out",
-  stagger: 0.4,
-  scrollTrigger: {
-    trigger: ".container-cardes-modelos",
-    start: "center 90%",
-    // play: inicia ao entrar / none: nada ao sair / none: nada ao voltar / reverse: fecha ao subir
-    toggleActions: "play none ",
-  },
-});
+
 
 gsap.to(".texto-trajetoria", {
   top: "50%",

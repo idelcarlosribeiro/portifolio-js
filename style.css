@@ -384,7 +384,7 @@ nav{
 .container-header::after{
   content: "";
   width: 100%;
-  height: 100%;
+  height: 100dvh;
   min-height: 500px;
   background-color: rgba(0, 0, 0, 0.711);
   position: absolute;
@@ -761,6 +761,7 @@ grid-row-gap: 0px;
 }
 .card-modelos {
   width: 25%;
+  height: 30vw;
   min-height: 400px;
   display: flex;
   flex-direction: column;
