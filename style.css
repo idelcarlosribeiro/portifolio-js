@@ -1079,10 +1079,12 @@ grid-row-gap: 0px;
   margin-top: 2%;
 }
 .cards-perguntas{
-  width: 100%;
+  width: 95%;
   display: flex;
   justify-content: center;
   gap: 10%;
+
+  flex-wrap: wrap;
 }
 
 
@@ -1096,6 +1098,7 @@ grid-row-gap: 0px;
   grid-template-rows: auto 0fr;
   transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   margin-bottom: 10px;
+  margin-top: 3%;
 }
 
 /* Quando clicado, a linha do grid expande para o tamanho do conteúdo (1fr) */
