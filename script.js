@@ -2,17 +2,23 @@ gsap.registerPlugin(ScrollTrigger);
 
 //introdução
 document.addEventListener("DOMContentLoaded", () => {
+  // 1. Configurações Iniciais
   gsap.registerPlugin(SplitText, CustomEase, ScrollTrigger);
   CustomEase.create("hop", ".8, 0, .3, 1");
 
   const body = document.body;
+  const introducaoElement = document.querySelector(".introducao");
 
-  // --- FUNÇÕES AUXILIARES ---
+  // 2. Verificação: Já viu nesta sessão? É um Refresh (F5)?
+  const jaViuIntro = sessionStorage.getItem("introExecutada");
+  const navEntries = performance.getEntriesByType("navigation");
+  const isReload = navEntries.length > 0 && navEntries[0].type === "reload";
 
+  // --- FUNÇÃO AUXILIAR DE SPLIT ---
   const splitTextElements = (
     selector,
     type = "words, chars",
-    addFirstChar = false
+    addFirstChar = false,
   ) => {
     const elements = document.querySelectorAll(selector);
     elements.forEach((element) => {
@@ -31,155 +37,167 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  // --- INICIALIZAÇÃO ---
+  // --- LÓGICA DE DECISÃO ---
 
-  splitTextElements(".intro-title h1", "words, chars", true);
-  splitTextElements(".outro-title h1");
-  splitTextElements(".tag p", "words");
-  splitTextElements(".card h1", "words, chars", true);
+  if (jaViuIntro && !isReload) {
+    // >>> CASO: VOLTANDO DE OUTRA PÁGINA (Pula a intro) <<<
+    console.log("⏩ Navegação interna detectada: Ocultando introdução.");
 
-  const isMobile = window.innerWidth < 1000;
-  const tags = gsap.utils.toArray(".tag");
+    if (introducaoElement) introducaoElement.style.display = "none";
+    body.classList.remove("lock-scroll");
 
-  // TIMELINE PRINCIPAL (PRELOADER)
-  const tl = gsap.timeline({
-    defaults: { ease: "hop" },
-    onStart: () => {
-      // Bloqueia o scroll assim que o preloader começa
-      body.classList.add("lock-scroll");
-    },
-  });
+    // Força o estado final do seu conteúdo principal
+    gsap.set(".testt", {
+      clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+    });
 
-  // Configuração inicial de estados
-  gsap.set(
-    [
-      ".split-overlay .intro-title .first-char span",
-      ".split-overlay .outro-title .char span",
-    ],
-    { y: "0%" }
-  );
-  gsap.set(".split-overlay .intro-title .first-char", {
-    x: isMobile ? "-10vw" : "18rem",
-    y: isMobile ? "-10vw" : "-2.75rem",
-    fontWeight: "900",
-    scale: 0.75,
-  });
-  gsap.set(".split-overlay .outro-title .char", {
-    x: isMobile ? "-5vw" : "-8rem",
-    fontSize: isMobile ? "11vw" : "10vw",
-    fontWeight: "500",
-  });
+    iniciarAnimacoesTexto();
+    ScrollTrigger.refresh();
+  } else {
+    // >>> CASO: PRIMEIRA VEZ OU F5 (Roda a intro) <<<
+    console.log("🎬 Primeira visita ou Refresh: Iniciando animação.");
 
-  // --- SEQUÊNCIA DE ANIMAÇÃO (PRELOADER) ---
+    // Marca que já foi executada
+    sessionStorage.setItem("introExecutada", "true");
 
-  tags.forEach((tag, index) => {
-    tl.to(
-      tag.querySelectorAll("p .word"),
-      { y: "0%", duration: 0.75 },
-      0.5 + index * 0.1
+    // Torna a intro visível para a animação começar
+    if (introducaoElement) {
+      introducaoElement.classList.add("executar-animacao");
+    }
+
+    // Prepara os textos
+    splitTextElements(".intro-title h1", "words, chars", true);
+    splitTextElements(".outro-title h1");
+    splitTextElements(".tag p", "words");
+    splitTextElements(".card h1", "words, chars", true);
+
+    const isMobile = window.innerWidth < 1000;
+    const tags = gsap.utils.toArray(".tag");
+
+    // Criação da Timeline Principal
+    const tl = gsap.timeline({
+      defaults: { ease: "hop" },
+      onStart: () => body.classList.add("lock-scroll"),
+    });
+
+    // Configuração inicial de estados
+    gsap.set(
+      [
+        ".split-overlay .intro-title .first-char span",
+        ".split-overlay .outro-title .char span",
+      ],
+      { y: "0%" },
     );
-  });
+    gsap.set(".split-overlay .intro-title .first-char", {
+      x: isMobile ? "-10vw" : "18rem",
+      y: isMobile ? "-10vw" : "-2.75rem",
+      fontWeight: "900",
+      scale: 0.75,
+    });
+    gsap.set(".split-overlay .outro-title .char", {
+      x: isMobile ? "-5vw" : "-8rem",
+      fontSize: isMobile ? "11vw" : "10vw",
+      fontWeight: "500",
+    });
 
-  tl.to(".preloader .intro-title .char span", { y: "0%", stagger: 0.05 }, 0.5)
-    .to(
-      ".preloader .intro-title .char:not(.first-char) span",
-      { y: "100%", duration: 0.75, stagger: 0.05 },
-      2
-    )
-    .to(
-      ".preloader .outro-title .char span",
-      { y: "0%", duration: 0.75, stagger: 0.075 },
-      2.5
-    )
-    .to(
-      ".preloader .intro-title .first-char",
-      { x: isMobile ? "25.50vw" : "22.25vw", duration: 1 },
-      3.5
-    )
-    .to(
-      ".preloader .outro-title .char",
-      { x: isMobile ? "-9vw" : "-8rem", duration: 1 },
-      3.5
-    )
-    .to(
-      ".preloader .intro-title .first-char",
-      {
-        x: isMobile ? "320%" : "11.60vw",
-        y: isMobile ? "-2.50vw" : "-1.80vw",
-        scale: 0.75,
-        duration: 0.75,
-      },
-      4.5
-    )
-    .to(
-      ".preloader .outro-title .char",
-      {
-        x: isMobile ? "-5vw" : "-8rem",
-        fontSize: isMobile ? "11vw" : "10vw",
-        fontWeight: "500",
-        duration: 0.75,
-        onComplete: () => {
-          gsap.set(".preloader", {
-            clipPath: "polygon(0 0, 100% 0, 100% 50%, 0 50%)",
-          });
-          gsap.set(".split-overlay", {
-            clipPath: "polygon(0 50%, 100% 50%, 100% 100%, 0 100%)",
-          });
+    // Sequência da sua animação original
+    tags.forEach((tag, index) => {
+      tl.to(
+        tag.querySelectorAll("p .word"),
+        { y: "0%", duration: 0.75 },
+        0.5 + index * 0.1,
+      );
+    });
+
+    tl.to(".preloader .intro-title .char span", { y: "0%", stagger: 0.05 }, 0.5)
+      .to(
+        ".preloader .intro-title .char:not(.first-char) span",
+        { y: "100%", duration: 0.75, stagger: 0.05 },
+        2,
+      )
+      .to(
+        ".preloader .outro-title .char span",
+        { y: "0%", duration: 0.75, stagger: 0.075 },
+        2.5,
+      )
+      .to(
+        ".preloader .intro-title .first-char",
+        { x: isMobile ? "25.50vw" : "22.25vw", duration: 1 },
+        3.5,
+      )
+      .to(
+        ".preloader .outro-title .char",
+        { x: isMobile ? "-9vw" : "-8rem", duration: 1 },
+        3.5,
+      )
+      .to(
+        ".preloader .intro-title .first-char",
+        {
+          x: isMobile ? "320%" : "11.60vw",
+          y: isMobile ? "-2.50vw" : "-1.80vw",
+          scale: 0.75,
+          duration: 0.75,
         },
-      },
-      4.5
-    )
-    .to(
-      ".tstt",
-      {
-        clipPath: "polygon(0% 48%, 100% 48%, 100% 52%, 0% 52%)",
-        duration: 1,
-        onComplete: () => {
-          // 2. Libera o Scroll
-          body.classList.remove("lock-scroll");
-
-          // 3. Dá Play nas animações de texto internas
-          iniciarAnimacoesTexto();
-
-          // 4. Força o ScrollTrigger a ler as posições agora que o main existe
-          ScrollTrigger.refresh();
+        4.5,
+      )
+      .to(
+        ".preloader .outro-title .char",
+        {
+          x: isMobile ? "-5vw" : "-8rem",
+          fontSize: isMobile ? "11vw" : "10vw",
+          fontWeight: "500",
+          duration: 0.75,
+          onComplete: () => {
+            gsap.set(".preloader", {
+              clipPath: "polygon(0 0, 100% 0, 100% 50%, 0 50%)",
+            });
+            gsap.set(".split-overlay", {
+              clipPath: "polygon(0 50%, 100% 50%, 100% 100%, 0 100%)",
+            });
+          },
         },
-      },
-      5
-    );
+        4.5,
+      )
+      .to(
+        ".tstt",
+        {
+          clipPath: "polygon(0% 48%, 100% 48%, 100% 52%, 0% 52%)",
+          duration: 1,
+          onComplete: () => {
+            body.classList.remove("lock-scroll");
+            iniciarAnimacoesTexto();
+            ScrollTrigger.refresh();
+          },
+        },
+        5,
+      );
 
-  tags.forEach((tag, index) => {
+    tags.forEach((tag, index) => {
+      tl.to(
+        tag.querySelectorAll("p .word"),
+        { y: "100%", duration: 0.75 },
+        5.5 + index * 0.1,
+      );
+    });
+
     tl.to(
-      tag.querySelectorAll("p .word"),
-      { y: "100%", duration: 0.75 },
-      5.5 + index * 0.1
-    );
-  });
-
-  tl.to(
-    [".preloader", ".split-overlay"],
-    { y: (i) => (i === 0 ? "-50%" : "50%"), duration: 1 },
-    6
-  )
-    .to(
-      ".introducao",
-      {
-        display: "none",
-        duration: 1,
-      },
-      6
-    ).to(
-      ".testt",
-      {
-        clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-        duration: 1,
-      },
-      6
-      
-)
+      [".preloader", ".split-overlay"],
+      { y: (i) => (i === 0 ? "-50%" : "50%"), duration: 1 },
+      6,
+    )
+      .to(".introducao", { display: "none", duration: 1 }, 6)
+      .to(
+        ".testt",
+        {
+          clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+          duration: 1,
+        },
+        6,
+      );
+  }
 });
 
-// Mantive sua função aqui para ser chamada no final do preloader
+// Sua função de animações internas (não alterada)
 function iniciarAnimacoesTexto() {
   const elementosParaAnimar = document.querySelectorAll(".split-animar");
 
@@ -202,7 +220,6 @@ function iniciarAnimacoesTexto() {
     });
   });
 
-  // Texto Webflow e Animate-me
   document.fonts.ready.then(() => {
     if (document.querySelector(".animate-me")) {
       let split = SplitText.create(".animate-me", {
@@ -232,46 +249,19 @@ function iniciarAnimacoesTexto() {
 //Navegção
 document.addEventListener("DOMContentLoaded", () => {
   gsap.registerPlugin(CustomEase, SplitText);
-  // Registra os plugins que o navegador já carregou via tag <script>
 
-  // Cria o ease personalizado
+  // Ease personalizado
   CustomEase.create("hop", ".87, 0, .13, 1");
 
   // Inicializa o Lenis
   const lenis = new Lenis();
-
   lenis.on("scroll", ScrollTrigger.update);
-
   gsap.ticker.add((time) => {
     lenis.raf(time * 1000);
   });
-
   gsap.ticker.lagSmoothing(0);
 
-  /*animção do texto */
-  const textContainers = document.querySelectorAll(".menu-col");
-  let splitTextByContainer = [];
-
-  textContainers.forEach((container) => {
-    const textElements = container.querySelectorAll("a, p");
-    let containerSplits = [];
-
-    textElements.forEach((element) => {
-      const split = SplitText.create(element, {
-        type: "lines",
-        mask: "lines",
-        linesClass: "line",
-      });
-      containerSplits.push(split);
-
-      gsap.set(split.lines, { y: "-110%" });
-    });
-
-    splitTextByContainer.push(containerSplits);
-  });
-  /*Fim animção do texto */
-  
-
+  // Seleção de Elementos
   const container = document.querySelector(".container");
   const menuToggleBtn = document.querySelector(".menu-toggle-btn");
   const menuOverlay = document.querySelector(".menu-overlay");
@@ -283,145 +273,185 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let isMenuOpen = false;
   let isAnimating = false;
+  let splitTextByContainer = [];
 
-  menuToggleBtn.addEventListener("click", () => {
-    if (isAnimating) return;
+  // --- PREPARAÇÃO DO TEXTO (SPLIT) ---
+  copyContainers.forEach((container) => {
+    const textElements = container.querySelectorAll("a, p");
+    let containerSplits = [];
 
-    if (!isMenuOpen) {
-      isAnimating = true;
+    textElements.forEach((element) => {
+      const split = SplitText.create(element, {
+        type: "lines",
+        linesClass: "line",
+      });
+      containerSplits.push(split);
+      gsap.set(split.lines, { y: "-110%" });
+    });
 
-      lenis.stop();
-      /*conteudo principal desce */
-      const tl = gsap.timeline();
+    splitTextByContainer.push(containerSplits);
+  });
 
-      tl.to(menuToggleLabel, {
-        y: "-110%",
-        duration: 1,
-        ease: "hop",
-      })
-        .to(
-          container,
-          {
-            opacity: 0,
-            duration: 0.1,
-            ease: "hop",
-          },
-          "<"
-        )
-        .to(
-          menuOverlay,
-          {
-            clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-            duration: 1,
-            ease: "hop",
-          },
-          "<"
-        )
-        .to(
-          menuOverlayContainer,
-          {
-            yPercent: 0,
-            duration: 1,
-            ease: "hop",
-          },
-          "<"
-        )
-        .to(
-          menuMediaWrapper,
-          {
-            opacity: 1,
-            duration: 0.75,
-            ease: "power2.out",
-          },
-          "<"
-        );
-      /* fim conteudo principal desce */
+  // --- FUNÇÃO PARA FECHAR O MENU ---
+  const fecharMenu = () => {
+    if (isAnimating || !isMenuOpen) return;
 
+    isAnimating = true;
+    hamburgerIcon.classList.remove("active");
+
+    const tl = gsap.timeline();
+
+    tl.to(container, {
+      opacity: 1,
+      duration: 0.9,
+      ease: "hop",
+    })
+      .to(
+        menuOverlay,
+        {
+          clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
+          duration: 1,
+          ease: "hop",
+        },
+        "<",
+      )
+      .to(
+        menuOverlayContainer,
+        {
+          yPercent: 0,
+          duration: 1,
+          ease: "hop",
+        },
+        "<",
+      )
+      .to(
+        menuToggleLabel,
+        {
+          y: "0%",
+          duration: 1,
+          ease: "hop",
+        },
+        "<",
+      )
+      .to(
+        copyContainers,
+        {
+          opacity: 0.25,
+          duration: 1,
+          ease: "hop",
+        },
+        "<",
+      );
+
+    tl.call(() => {
+      // Resetar os textos para a posição inicial (subir)
       splitTextByContainer.forEach((containerSplits) => {
         const copyLines = containerSplits.flatMap((split) => split.lines);
-
-        tl.to(
-          copyLines,
-          {
-            y: "0%",
-            duration: 2,
-            ease: "hop",
-            stagger: -0.075,
-          },
-          -0.15
-        );
+        gsap.set(copyLines, { y: "-110%" });
       });
 
-      hamburgerIcon.classList.add("active");
+      gsap.set(copyContainers, { opacity: 1 });
+      gsap.set(menuMediaWrapper, { opacity: 0 });
 
-      tl.call(() => {
-        isAnimating = false;
-      });
-
-      isMenuOpen = true;
-    } else {
-      isAnimating = true;
-
-      hamburgerIcon.classList.remove("active");
-      const tl = gsap.timeline();
-
-      tl.to(container, {
-        opacity: 1,
-        duration: 0.9,
-        ease: "hop",
-      })
-        .to(
-          menuOverlay,
-          {
-            clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
-            duration: 1,
-            ease: "hop",
-          },
-          "<"
-        )
-        .to(
-          menuOverlayContainer,
-          {
-            yPercent: 0,
-            duration: 1,
-            ease: "hop",
-          },
-          "<"
-        )
-        .to(
-          menuToggleLabel,
-          {
-            y: "0%",
-            duration: 1,
-            ease: "hop",
-          },
-          "<"
-        )
-        .to(
-          copyContainers,
-          {
-            opacity: 0.25,
-            duration: 1,
-            ease: "hop",
-          },
-          "<"
-        );
-
-      tl.call(() => {
-        splitTextByContainer.forEach((containerSplits) => {
-          const copyLines = containerSplits.flatMap((split) => split.lines);
-          gsap.set(copyLines, { y: "-110%" });
-        });
-
-        gsap.set(copyContainers, { opacity: 1 });
-        gsap.set(menuMediaWrapper, { opacity: 0 });
-
-        isAnimating = false;
-        lenis.start();
-      });
-
+      isAnimating = false;
       isMenuOpen = false;
+      lenis.start(); // Reativa o scroll
+    });
+  };
+
+  // --- FUNÇÃO PARA ABRIR O MENU ---
+  const abrirMenu = () => {
+    if (isAnimating || isMenuOpen) return;
+
+    isAnimating = true;
+    lenis.stop(); // Trava o scroll
+
+    const tl = gsap.timeline();
+
+    tl.to(menuToggleLabel, {
+      y: "-110%",
+      duration: 1,
+      ease: "hop",
+    })
+      .to(
+        container,
+        {
+          opacity: 0,
+          duration: 0.1,
+          ease: "hop",
+        },
+        "<",
+      )
+      .to(
+        menuOverlay,
+        {
+          clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+          duration: 1,
+          ease: "hop",
+        },
+        "<",
+      )
+      .to(
+        menuOverlayContainer,
+        {
+          yPercent: 0,
+          duration: 1,
+          ease: "hop",
+        },
+        "<",
+      )
+      .to(
+        menuMediaWrapper,
+        {
+          opacity: 1,
+          duration: 0.75,
+          ease: "power2.out",
+        },
+        "<",
+      );
+
+    // Animação das linhas de texto entrando
+    splitTextByContainer.forEach((containerSplits) => {
+      const copyLines = containerSplits.flatMap((split) => split.lines);
+      tl.to(
+        copyLines,
+        {
+          y: "0%",
+          duration: 2,
+          ease: "hop",
+          stagger: -0.075,
+        },
+        -0.15,
+      );
+    });
+
+    hamburgerIcon.classList.add("active");
+
+    tl.call(() => {
+      isAnimating = false;
+      isMenuOpen = true;
+    });
+  };
+
+  // --- LISTENERS (EVENTOS) ---
+
+  // Botão Hamburguer
+  menuToggleBtn.addEventListener("click", () => {
+    if (isMenuOpen) {
+      fecharMenu();
+    } else {
+      abrirMenu();
     }
+  });
+
+  // Clicar nas colunas (menu-col) para fechar
+  copyContainers.forEach((col) => {
+    // Adiciona o evento de clique na coluna inteira
+    col.addEventListener("click", (e) => {
+      // Opcional: Se houver links reais, o navegador mudará de página.
+      // A animação de fechamento rodará enquanto a nova página carrega.
+      fecharMenu();
+    });
   });
 });
 //Fim navegação

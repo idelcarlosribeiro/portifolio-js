@@ -31,6 +31,16 @@ main a, nav a:hover{
 /*spllhas*/
 /* Estilo para a Tela de Introdução */
 /*Introdução*/
+.introducao {
+    display: none; 
+    opacity: 0;
+}
+
+/* Esta classe será adicionada pelo JS apenas quando a animação deve rodar */
+.introducao.executar-animacao {
+    display: block;
+    opacity: 1;
+}
 body.lock-scroll {
   overflow: hidden !important;
   position: fixed; /* Opcional: garante trava total em mobile */
@@ -823,6 +833,8 @@ grid-row-gap: 0px;
   background-position: bottom;
 }
 /*Fim modelos*/
+
+/* Esconde a intro por padrão para evitar que ela apareça ao carregar a página */
 
 
 /*Conhecimento*/
