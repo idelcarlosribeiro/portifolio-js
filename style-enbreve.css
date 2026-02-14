@@ -21,16 +21,14 @@
 
 .container-texto-embreve{
     width: 70%;
-    height: 60%;
     z-index: 2;
-    background-color: brown;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 .bottom-embreve{
-    height: 15%;
+    height: 80px;
     display: flex;
     background-color: rgba(17, 17, 17, 0.89);
     border: 1px solid rgba(255, 255, 255, 0.44);
