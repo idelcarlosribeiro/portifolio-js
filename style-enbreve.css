@@ -82,21 +82,19 @@
 }
 .patrocinador{
     width: 100%;
-    height: 20%;
-    background-color: blue;
+    height: 10%;
+    z-index: 1;
     position: relative;
-    z-index: 2;
 }
 
 .patrocinador .slider{
     width: 100%;
-    height: 13vw;
     min-height: 150px;
     overflow: hidden;
     mask-image: linear-gradient(
         to right,
         transparent,
-        #000 10% 90%,
+        #000 0% 90%,
         transparent
     );
      will-change: transform;
@@ -104,6 +102,7 @@
 .patrocinador .slider .list{
     display: flex;
     width: 100%;
+    height: 100%;
     min-width: calc(var(--width) * var(--quantity));
     position: relative;
 }
@@ -119,7 +118,7 @@
 
 .patrocinador .div-img-item{
   width: 100%;
-  height: 13vw;
+  height: 100%;
   min-height: 150px;
   border-radius: 15px;
   display: flex;
@@ -129,24 +128,28 @@
   background-color: transparent;
 }
 .patrocinador .img-item {
-  width: 90%;
-  height: 85%;
+  width: 100%;
+  height: 50%;
   border-radius: 15px;
   background-position: center;
-  background-size: cover;
+  background-size: contain;
   background-repeat: no-repeat;
-  border: 1px solid #ffffff1e;
+  border: none;
   position: relative;
 }
-.img-item::after{
+.patrocinador .img-item::after{
   border-radius: 15px ;
   content: "";
   position: absolute;
   width: 100%;
   height: 100%;
-  background-color: #0505054b;
+  background-color: transparent;
 }
-
+.patrocinador .img1{background-image: url(img/logopatro1.webp);}
+.patrocinador .img2{background-image: url(img/logopatro2.webp);}
+.patrocinador .img3{background-image: url(img/logopatro3.webp);}
+.patrocinador .img4{background-image: url(img/logopatro1.webp);}
+.patrocinador .img5{background-image: url(img/logopatro2.webp);}
 @keyframes autoRun{
     from{
         left: 100%;
