@@ -223,21 +223,23 @@
         width: 100%;
     }
 .bottom-embreve{
-    height: 65px;
+    height: 15vw;
 }
 .versao p{
-    font-size: 1em;
+    font-size: 4vw;
 }
 .versao-buttom{
-    height: 25px;
+    height: 5vw;
+    gap: 5px;
+    padding: 17px;
 }
 .versao-buttom p{
-    font-size: 1em;
+    font-size: 3vw;
     font-weight: 600;
 }
 .curco{
-    width: 25px;
-    height: 25px;
+    width: 5vw;
+    height: 5vw;
 }
 .curco img{
     width: 18px;
