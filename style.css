@@ -1479,7 +1479,7 @@ footer{
     .div-img-item{min-height: 100px; border-radius: 10px;}
     .texto-pagina-inicia h2{font-size: 5.5vw;}
     .container-slader-inicial{ min-width: 95vw; min-height: 50vw; border-radius: 15px;}
-     .container-slader-inicial::after{border-radius: 15px;}
+    .container-slader-inicial::after{border-radius: 15px;}
 
 
 
