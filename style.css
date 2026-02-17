@@ -1451,6 +1451,7 @@ footer{
 }
 
     /*  Menu  */
+    .menu-link a {font-size: .8em;}
     .container-diretitos-autorais{ width: 240px;}
     .curcou-direitos-autorais{ width: 20px; height: 20px; margin: 2% 3%;}
     .curcou-direitos-autorais img{width: 6px; height: 6px;}
@@ -1498,7 +1499,7 @@ footer{
     .container-cards-conhecimento { grid-area: 1 / 4 / 7 / 7;}
     .texto-conhecimento{ width: 100%;}
     .cards-conhecimento { height: auto;  }
-    .logo { width: 10vw; height: 5vw; }
+    .logo { width: 8vw; height: 7vw; }
     .texto-card-conhecimento{ padding: 4%;}
     .texto-card-conhecimento h3 { font-size: 2.8vw; }
     .texto-card-conhecimento p { font-size: .7em; }
