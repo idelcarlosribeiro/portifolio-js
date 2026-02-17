@@ -6,15 +6,20 @@
     --hamburger-icon-boder: rgb(255, 255, 255, 0.1);
 }
 /* Estado normal */
+
+/* No seu arquivo style.css */
+/* Estado normal */
 .transition-fade {
-    transition: 1s;
+    transition: .5s;
     opacity: 1;
 }
-
+html.is-changing body {
+  overflow-y: hidden;
+}
 /* Estado durante a troca (Swup adiciona essa classe no HTML) */
 html.is-animating .transition-fade {
     opacity: 0;
-    transform: translateY(600px); /* Opcional: faz subir um pouquinho */
+    transform: translateY(500px); /* Opcional: faz subir um pouquinho */
 }
 
 * {
@@ -172,7 +177,7 @@ nav{
     width: 100%;
     pointer-events: none;
     overflow: hidden;
-    z-index: 3;
+    z-index: 7;
 }
 .menu-bar{
     position: fixed;
@@ -186,7 +191,7 @@ nav{
     pointer-events: all;
     color: var(--menu-fg-secorndary);
     z-index: 2;
-}
+    }
 .menu-logo{
     margin-left: 3%;
 }
