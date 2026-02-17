@@ -1,9 +1,8 @@
 import Swup from "https://unpkg.com/swup@4?module";
 
 // --- CONFIGURAÇÃO DO SWUP ---
-// Definimos explicitamente que ele deve trocar o conteúdo de #swup
 const swup = new Swup({
-  containers: ["#swup"],
+  containers: ["#swup"] 
 });
 
 // Variável global para o Lenis
@@ -14,7 +13,7 @@ let lenis;
  * Roda no carregamento inicial e a cada troca de página do Swup.
  */
 function init() {
-  console.log("🚀 Inicializando/Reinicializando scripts...");
+  console.log("🚀 Inicializando scripts...");
 
   // 1. REGISTRO DE PLUGINS E EASES
   gsap.registerPlugin(SplitText, CustomEase, ScrollTrigger);
@@ -22,22 +21,21 @@ function init() {
   CustomEase.create("menuHop", ".87, 0, .13, 1");
 
   // 2. CONFIGURAÇÃO DO LENIS (Scroll Suave)
-  if (lenis) lenis.destroy(); // Destrói o anterior se existir
-
+  if (lenis) lenis.destroy(); 
+  
   lenis = new Lenis({
     duration: 1.2,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    smooth: true,
+    smooth: true
   });
-
+  
   lenis.on("scroll", ScrollTrigger.update);
-
-  // Remove listener antigo para não duplicar
+  
   gsap.ticker.remove(lenisRaf);
   gsap.ticker.add(lenisRaf);
   gsap.ticker.lagSmoothing(0);
 
-  // 3. EXECUÇÃO DOS MÓDULOS (Só rodam se o elemento existir na página)
+  // 3. EXECUÇÃO DOS MÓDULOS
   runIntroducao();
   runNavegacao();
   runConhecimento();
@@ -48,39 +46,47 @@ function init() {
   ScrollTrigger.refresh();
 }
 
-// Função auxiliar para o RAF do Lenis
 function lenisRaf(time) {
-  if (lenis) lenis.raf(time * 1000);
+  if(lenis) lenis.raf(time * 1000);
 }
 
-// --- MÓDULO 1: INTRODUÇÃO ---
+// --- MÓDULO 1: INTRODUÇÃO (VERSÃO "UMA VEZ POR SESSÃO") ---
 function runIntroducao() {
   const introducaoElement = document.querySelector(".introducao");
-  if (!introducaoElement) return; // Se não tem intro nessa página, sai.
+  if (!introducaoElement) return;
 
   const body = document.body;
-  const jaViuIntro = sessionStorage.getItem("introExecutada");
+  
+  // Verifica se já rodou nesta aba (sessionStorage) ou nesta navegação (window)
+  const jaViuIntro = sessionStorage.getItem("introExecutada") || window.introConcluida;
   const navEntries = performance.getEntriesByType("navigation");
   const isReload = navEntries.length > 0 && navEntries[0].type === "reload";
 
+  // Lógica de Bloqueio: Se já viu e não é F5, pula a intro
+  if (jaViuIntro && !isReload) {
+    console.log("⏩ Navegação interna detectada: Introdução suprimida.");
+    introducaoElement.style.display = "none";
+    body.classList.remove("lock-scroll");
+    
+    // Força o estado final dos elementos da página
+    gsap.set(".testt", { clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)" });
+    
+    iniciarAnimacoesTexto();
+    return; // Encerra a função aqui
+  }
+
+  // Se chegou aqui, é a primeira vez ou F5
+  console.log("🎬 Iniciando animação de introdução...");
+  sessionStorage.setItem("introExecutada", "true");
+  window.introConcluida = true; // Trava para trocas de página via Swup
+
+  introducaoElement.classList.add("executar-animacao");
+
   // Helpers de SplitText
-  const splitTextElements = (
-    selector,
-    type = "words, chars",
-    addFirstChar = false,
-  ) => {
+  const splitTextElements = (selector, type = "words, chars", addFirstChar = false) => {
     const elements = document.querySelectorAll(selector);
     elements.forEach((element) => {
-      // Reverter split anterior se houver (segurança)
-      if (element._splitInstance) element._splitInstance.revert();
-
-      const splitText = new SplitText(element, {
-        type,
-        wordsClass: "word",
-        charsClass: "char",
-      });
-      element._splitInstance = splitText; // Salva instância
-
+      const splitText = new SplitText(element, { type, wordsClass: "word", charsClass: "char" });
       if (type.includes("chars")) {
         splitText.chars.forEach((char, index) => {
           char.innerHTML = `<span>${char.textContent}</span>`;
@@ -90,168 +96,77 @@ function runIntroducao() {
     });
   };
 
-  if (jaViuIntro && !isReload) {
-    // PULAR INTRO
-    introducaoElement.style.display = "none";
-    body.classList.remove("lock-scroll");
-    gsap.set(".testt", {
-      clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-    });
-    iniciarAnimacoesTexto();
-  } else {
-    // RODAR INTRO
-    sessionStorage.setItem("introExecutada", "true");
-    introducaoElement.classList.add("executar-animacao");
+  splitTextElements(".intro-title h1", "words, chars", true);
+  splitTextElements(".outro-title h1");
+  splitTextElements(".tag p", "words");
+  splitTextElements(".card h1", "words, chars", true);
 
-    splitTextElements(".intro-title h1", "words, chars", true);
-    splitTextElements(".outro-title h1");
-    splitTextElements(".tag p", "words");
-    splitTextElements(".card h1", "words, chars", true);
+  const isMobile = window.innerWidth < 1000;
+  const tags = gsap.utils.toArray(".tag");
 
-    const isMobile = window.innerWidth < 1000;
-    const tags = gsap.utils.toArray(".tag");
+  const tl = gsap.timeline({
+    defaults: { ease: "hop" },
+    onStart: () => body.classList.add("lock-scroll"),
+  });
 
-    const tl = gsap.timeline({
-      defaults: { ease: "hop" },
-      onStart: () => body.classList.add("lock-scroll"),
-    });
+  // Configuração inicial
+  gsap.set([".split-overlay .intro-title .first-char span", ".split-overlay .outro-title .char span"], { y: "0%" });
+  gsap.set(".split-overlay .intro-title .first-char", {
+    x: isMobile ? "-10vw" : "18rem", y: isMobile ? "-10vw" : "-2.75rem", fontWeight: "900", scale: 0.75,
+  });
+  gsap.set(".split-overlay .outro-title .char", {
+    x: isMobile ? "-5vw" : "-8rem", fontSize: isMobile ? "11vw" : "10vw", fontWeight: "500",
+  });
 
-    gsap.set(
-      [
-        ".split-overlay .intro-title .first-char span",
-        ".split-overlay .outro-title .char span",
-      ],
-      { y: "0%" },
-    );
-    gsap.set(".split-overlay .intro-title .first-char", {
-      x: isMobile ? "-10vw" : "18rem",
-      y: isMobile ? "-10vw" : "-2.75rem",
-      fontWeight: "900",
-      scale: 0.75,
-    });
-    gsap.set(".split-overlay .outro-title .char", {
-      x: isMobile ? "-5vw" : "-8rem",
-      fontSize: isMobile ? "11vw" : "10vw",
-      fontWeight: "500",
-    });
+  // Sequência da Animação
+  tags.forEach((tag, index) => {
+    tl.to(tag.querySelectorAll("p .word"), { y: "0%", duration: 0.75 }, 0.5 + index * 0.1);
+  });
 
-    tags.forEach((tag, index) => {
-      tl.to(
-        tag.querySelectorAll("p .word"),
-        { y: "0%", duration: 0.75 },
-        0.5 + index * 0.1,
-      );
-    });
+  tl.to(".preloader .intro-title .char span", { y: "0%", stagger: 0.05 }, 0.5)
+    .to(".preloader .intro-title .char:not(.first-char) span", { y: "100%", duration: 0.75, stagger: 0.05 }, 2)
+    .to(".preloader .outro-title .char span", { y: "0%", duration: 0.75, stagger: 0.075 }, 2.5)
+    .to(".preloader .intro-title .first-char", { x: isMobile ? "25.50vw" : "22.25vw", duration: 1 }, 3.5)
+    .to(".preloader .outro-title .char", { x: isMobile ? "-9vw" : "-8rem", duration: 1 }, 3.5)
+    .to(".preloader .intro-title .first-char", { x: isMobile ? "320%" : "11.60vw", y: isMobile ? "-2.50vw" : "-1.80vw", scale: 0.75, duration: 0.75 }, 4.5)
+    .to(".preloader .outro-title .char", {
+      x: isMobile ? "-5vw" : "-8rem", fontSize: isMobile ? "11vw" : "10vw", fontWeight: "500", duration: 0.75,
+      onComplete: () => {
+        gsap.set(".preloader", { clipPath: "polygon(0 0, 100% 0, 100% 50%, 0 50%)" });
+        gsap.set(".split-overlay", { clipPath: "polygon(0 50%, 100% 50%, 100% 100%, 0 100%)" });
+      },
+    }, 4.5)
+    .to(".tstt", {
+      clipPath: "polygon(0% 48%, 100% 48%, 100% 52%, 0% 52%)", duration: 1,
+      onComplete: () => {
+        body.classList.remove("lock-scroll");
+        iniciarAnimacoesTexto();
+        ScrollTrigger.refresh();
+      },
+    }, 5);
 
-    tl.to(".preloader .intro-title .char span", { y: "0%", stagger: 0.05 }, 0.5)
-      .to(
-        ".preloader .intro-title .char:not(.first-char) span",
-        { y: "100%", duration: 0.75, stagger: 0.05 },
-        2,
-      )
-      .to(
-        ".preloader .outro-title .char span",
-        { y: "0%", duration: 0.75, stagger: 0.075 },
-        2.5,
-      )
-      .to(
-        ".preloader .intro-title .first-char",
-        { x: isMobile ? "25.50vw" : "22.25vw", duration: 1 },
-        3.5,
-      )
-      .to(
-        ".preloader .outro-title .char",
-        { x: isMobile ? "-9vw" : "-8rem", duration: 1 },
-        3.5,
-      )
-      .to(
-        ".preloader .intro-title .first-char",
-        {
-          x: isMobile ? "320%" : "11.60vw",
-          y: isMobile ? "-2.50vw" : "-1.80vw",
-          scale: 0.75,
-          duration: 0.75,
-        },
-        4.5,
-      )
-      .to(
-        ".preloader .outro-title .char",
-        {
-          x: isMobile ? "-5vw" : "-8rem",
-          fontSize: isMobile ? "11vw" : "10vw",
-          fontWeight: "500",
-          duration: 0.75,
-          onComplete: () => {
-            gsap.set(".preloader", {
-              clipPath: "polygon(0 0, 100% 0, 100% 50%, 0 50%)",
-            });
-            gsap.set(".split-overlay", {
-              clipPath: "polygon(0 50%, 100% 50%, 100% 100%, 0 100%)",
-            });
-          },
-        },
-        4.5,
-      )
-      .to(
-        ".tstt",
-        {
-          clipPath: "polygon(0% 48%, 100% 48%, 100% 52%, 0% 52%)",
-          duration: 1,
-          onComplete: () => {
-            body.classList.remove("lock-scroll");
-            iniciarAnimacoesTexto();
-            ScrollTrigger.refresh();
-          },
-        },
-        5,
-      );
+  tags.forEach((tag, index) => {
+    tl.to(tag.querySelectorAll("p .word"), { y: "100%", duration: 0.75 }, 5.5 + index * 0.1);
+  });
 
-    tags.forEach((tag, index) => {
-      tl.to(
-        tag.querySelectorAll("p .word"),
-        { y: "100%", duration: 0.75 },
-        5.5 + index * 0.1,
-      );
-    });
-
-    tl.to(
-      [".preloader", ".split-overlay"],
-      { y: (i) => (i === 0 ? "-50%" : "50%"), duration: 1 },
-      6,
-    )
-      .to(".introducao", { display: "none", duration: 1 }, 6)
-      .to(
-        ".testt",
-        {
-          clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-          duration: 1,
-        },
-        6,
-      );
-  }
+  tl.to([".preloader", ".split-overlay"], { y: (i) => (i === 0 ? "-50%" : "50%"), duration: 1 }, 6)
+    .to(".introducao", { display: "none", duration: 1 }, 6)
+    .to(".testt", { clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)", duration: 1 }, 6);
 }
 
 function iniciarAnimacoesTexto() {
   const elementos = document.querySelectorAll(".split-animar");
   elementos.forEach((el) => {
-    // Se já foi animado, pule ou resete
-    if (el.classList.contains("animado")) return;
-
     const split = new SplitText(el, { type: "chars, words" });
     gsap.set(el, { opacity: 1, visibility: "visible" });
     gsap.from(split.chars, {
       scrollTrigger: { trigger: el, start: "top 85%", once: true },
-      duration: 1,
-      y: 100,
-      opacity: 0,
-      stagger: 0.05,
-      ease: "expo.out",
-      onComplete: () => {
-        split.revert();
-        el.classList.add("animado");
-      },
+      duration: 1, y: 100, opacity: 0, stagger: 0.05, ease: "expo.out",
+      onComplete: () => split.revert(),
     });
   });
+  
+  gsap.from(".texto-webflow", { opacity: 0, x: 100, duration: 1 });
 }
 
 // --- MÓDULO 2: NAVEGAÇÃO ---
@@ -275,10 +190,7 @@ function runNavegacao() {
     const textElements = container.querySelectorAll("a, p");
     let containerSplits = [];
     textElements.forEach((element) => {
-      const split = SplitText.create(element, {
-        type: "lines",
-        linesClass: "line",
-      });
+      const split = SplitText.create(element, { type: "lines", linesClass: "line" });
       containerSplits.push(split);
       gsap.set(split.lines, { y: "-110%" });
     });
@@ -292,107 +204,59 @@ function runNavegacao() {
 
     const tl = gsap.timeline();
     tl.to(container, { opacity: 1, duration: 0.9, ease: "menuHop" })
-      .to(
-        menuOverlay,
-        {
-          clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
-          duration: 1,
-          ease: "menuHop",
-        },
-        "<",
-      )
-      .to(
-        menuOverlayContainer,
-        { yPercent: 0, duration: 1, ease: "menuHop" },
-        "<",
-      )
+      .to(menuOverlay, { clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)", duration: 1, ease: "menuHop" }, "<")
       .to(menuToggleLabel, { y: "0%", duration: 1, ease: "menuHop" }, "<")
-      .to(copyContainers, { opacity: 0.25, duration: 1, ease: "menuHop" }, "<");
-
-    tl.call(() => {
-      splitTextByContainer.forEach((splits) => {
-        const lines = splits.flatMap((s) => s.lines);
-        gsap.set(lines, { y: "-110%" });
+      .to(copyContainers, { opacity: 0.25, duration: 1, ease: "menuHop" }, "<")
+      .call(() => {
+        splitTextByContainer.forEach((splits) => {
+          const lines = splits.flatMap((s) => s.lines);
+          gsap.set(lines, { y: "-110%" });
+        });
+        isAnimating = false;
+        isMenuOpen = false;
+        if(lenis) lenis.start();
       });
-      gsap.set(copyContainers, { opacity: 1 });
-      gsap.set(menuMediaWrapper, { opacity: 0 });
-      isAnimating = false;
-      isMenuOpen = false;
-      if (lenis) lenis.start();
-    });
   };
 
   const abrirMenu = () => {
     if (isAnimating || isMenuOpen) return;
     isAnimating = true;
-    if (lenis) lenis.stop();
+    if(lenis) lenis.stop();
 
     const tl = gsap.timeline();
     tl.to(menuToggleLabel, { y: "-110%", duration: 1, ease: "menuHop" })
-      .to(container, { opacity: 0, duration: 0.1, ease: "menuHop" }, "<")
-      .to(
-        menuOverlay,
-        {
-          clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-          duration: 1,
-          ease: "menuHop",
-        },
-        "<",
-      )
-      .to(
-        menuOverlayContainer,
-        { yPercent: 0, duration: 1, ease: "menuHop" },
-        "<",
-      )
-      .to(
-        menuMediaWrapper,
-        { opacity: 1, duration: 0.75, ease: "power2.out" },
-        "<",
-      );
+      .to(menuOverlay, { clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)", duration: 1, ease: "menuHop" }, "<");
 
     splitTextByContainer.forEach((splits) => {
       const lines = splits.flatMap((s) => s.lines);
-      tl.to(
-        lines,
-        { y: "0%", duration: 2, ease: "menuHop", stagger: -0.075 },
-        -0.15,
-      );
+      tl.to(lines, { y: "0%", duration: 2, ease: "menuHop", stagger: -0.075 }, -0.15);
     });
 
     hamburgerIcon.classList.add("active");
-    tl.call(() => {
-      isAnimating = false;
-      isMenuOpen = true;
-    });
+    tl.call(() => { isAnimating = false; isMenuOpen = true; });
   };
 
-  menuToggleBtn.addEventListener("click", () =>
-    isMenuOpen ? fecharMenu() : abrirMenu(),
-  );
-  copyContainers.forEach((col) => {
-    col.addEventListener("click", fecharMenu);
-  });
+  menuToggleBtn.addEventListener("click", () => isMenuOpen ? fecharMenu() : abrirMenu());
+  copyContainers.forEach((col) => col.addEventListener("click", fecharMenu));
 }
 
 // --- MÓDULO 3: ABAS CONHECIMENTO ---
 function runConhecimento() {
   const abas = document.querySelectorAll(".item-menu");
   const conteudos = document.querySelectorAll(".descricao-conteudo");
-  if (abas.length === 0) return;
+  if(abas.length === 0) return;
 
   abas.forEach((aba) => {
     aba.addEventListener("click", (event) => {
       abas.forEach((a) => a.classList.remove("ativo"));
       conteudos.forEach((c) => c.classList.remove("visivel"));
-      const clicada = event.currentTarget;
-      clicada.classList.add("ativo");
-      const alvo = document.getElementById(clicada.dataset.alvo);
-      if (alvo) alvo.classList.add("visivel");
+      event.currentTarget.classList.add("ativo");
+      document.getElementById(event.currentTarget.dataset.alvo)?.classList.add("visivel");
     });
   });
 }
 
-// --- MÓDULO 4: FUNCIONALIDADES, CARDS & FAQS ---
+// --- MÓDULO 4: FUNCIONALIDADES & CARDS ---
 function runFuncionalidades() {
   const wrapper = document.querySelector(".wrapper-404");
   if (wrapper) {
@@ -404,22 +268,14 @@ function runFuncionalidades() {
     ];
     const mainTl = gsap.timeline({
       scrollTrigger: {
-        trigger: ".wrapper-404",
-        start: "top top",
-        end: () => `+=${window.innerHeight * 6}`,
-        scrub: 1,
-        pin: true,
-        invalidateOnRefresh: true,
+        trigger: ".wrapper-404", start: "top top", end: () => `+=${window.innerHeight * 6}`,
+        scrub: 1, pin: true, invalidateOnRefresh: true,
       },
     });
     mainTl.to(".wrapper-404", { x: () => `-${260}vw`, ease: "none" }, 0);
     cards.forEach((card) => {
       if (document.querySelector(card.id)) {
-        mainTl.to(
-          card.id,
-          { x: () => card.endX, rotate: () => card.rotate * 2, ease: "none" },
-          0,
-        );
+        mainTl.to(card.id, { x: () => card.endX, rotate: () => card.rotate * 2, ease: "none" }, 0);
       }
     });
   }
@@ -427,91 +283,51 @@ function runFuncionalidades() {
   const player = document.querySelector("#meuLottie");
   if (player) {
     ScrollTrigger.create({
-      trigger: ".card-fucionalidade",
-      start: "top 40%",
-      end: "top top",
-      onEnter: () => player.play(),
-      onEnterBack: () => player.play(),
-      onLeaveBack: () => player.stop(),
+      trigger: ".card-fucionalidade", start: "top 40%", end: "top top",
+      onEnter: () => player.play(), onEnterBack: () => player.play(), onLeaveBack: () => player.stop(),
     });
   }
 
-  const titulosPerguntas = document.querySelectorAll(".cards-perguntas h3");
-  titulosPerguntas.forEach((titulo) => {
-    titulo.addEventListener("click", () => {
-      titulo.parentElement.classList.toggle("ocultar");
-    });
-  });
-
-  const faqs = document.querySelectorAll(".faq-header");
-  faqs.forEach((header) => {
-    header.addEventListener("click", () => {
-      const item = header.parentElement;
-      document.querySelectorAll(".faq-item").forEach((outro) => {
-        if (outro !== item) outro.classList.remove("aberto");
-      });
+  document.querySelectorAll(".cards-perguntas h3").forEach(h => h.addEventListener("click", () => h.parentElement.classList.toggle("ocultar")));
+  document.querySelectorAll(".faq-header").forEach(h => h.addEventListener("click", () => {
+      const item = h.parentElement;
+      document.querySelectorAll(".faq-item").forEach(o => o !== item && o.classList.remove("aberto"));
       item.classList.toggle("aberto");
-    });
-  });
+  }));
 }
 
 // --- MÓDULO 5: EFEITOS DE SCROLL ---
 function runEfeitosScroll() {
-  const scrollElements = document.querySelectorAll(
-    ".scroll-rigth, .scroll-bottom, .scroll-scala",
-  );
-  scrollElements.forEach((el) => {
-    ScrollTrigger.create({
-      trigger: el,
-      endTrigger: "body",
-      start: "top 85%",
-      stagger: 1,
-      end: "bottom top",
-      toggleClass: "scroll-ativo",
-      once: true,
-    });
+  document.querySelectorAll(".scroll-rigth, .scroll-bottom, .scroll-scala").forEach((el) => {
+    ScrollTrigger.create({ trigger: el, start: "top 85%", toggleClass: "scroll-ativo", once: true });
   });
 
-  if (document.querySelector(".container-texto-trajetoria")) {
+  if(document.querySelector(".container-texto-trajetoria")) {
     gsap.to(".texto-trajetoria", {
       top: "50%",
-      scrollTrigger: {
-        trigger: ".container-texto-trajetoria",
-        start: "top 70%",
-        end: "bottom top",
-        scrub: 1,
-      },
+      scrollTrigger: { trigger: ".container-texto-trajetoria", start: "top 70%", end: "bottom top", scrub: 1 },
     });
   }
 }
 
 // =========================================================
-// CONTROLE DE CICLO DE VIDA (A MÁGICA ACONTECE AQUI)
+// CONTROLE DE CICLO DE VIDA (SWUP)
 // =========================================================
 
 // 1. CARREGAMENTO INICIAL
-if (
-  document.readyState === "complete" ||
-  document.readyState === "interactive"
-) {
+if (document.readyState === "complete" || document.readyState === "interactive") {
   init();
 } else {
   document.addEventListener("DOMContentLoaded", init);
 }
 
-// 2. PREPARAÇÃO ANTES DE SAIR DA PÁGINA (KILL)
-swup.hooks.on("visit:start", () => {
-  // Mata ScrollTrigger antes mesmo da animação de saída começar
-  ScrollTrigger.killAll();
+// 2. LIMPEZA ANTES DE SAIR DA PÁGINA
+swup.hooks.on('visit:start', () => {
+    ScrollTrigger.killAll(); // Remove todos os gatilhos antigos
 });
 
-// 3. QUANDO O CONTEÚDO NOVO ENTRA (RE-INIT)
-swup.hooks.on("content:replace", () => {
-  console.log("♻️ Swup trocou o conteúdo. Resetando...");
-
-  // Força o scroll pro topo imediatamente
+// 3. REINICIALIZAÇÃO QUANDO A PÁGINA TROCA
+swup.hooks.on('content:replace', () => {
   window.scrollTo(0, 0);
-
-  // Reinicia tudo
-  init();
+  init(); // Roda toda a lógica novamente para o novo HTML
 });
