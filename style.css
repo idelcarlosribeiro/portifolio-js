@@ -1505,14 +1505,14 @@ footer{
     .container-cards-conhecimento { grid-area: 1 / 4 / 7 / 7;}
     .texto-conhecimento{ width: 100%;}
     .cards-conhecimento { height: auto;  }
-    .logo { width: 8vw; height: 7vw; }
+    .logo { width: 13vw; height: 8vw; }
     .texto-card-conhecimento{ padding: 4%;}
     .texto-card-conhecimento h3 { font-size: 2.8vw; }
     .texto-card-conhecimento p { font-size: .7em; }
     
     .container-info-conhemento { min-height: 300px; }
     .info-logo-text {  align-items: center; text-align: center; }
-    .logo-info { width: 60px; height: 60px; }
+    .logo-info { width: 70px; height: 60px; }
     .info-texto h2 { font-size: 20px; }
     .info-descricao p { font-size: 10px;  width: 100%; }
     .link-info-descricao { width: 100%; }
