@@ -261,6 +261,22 @@ function iniciarAnimacoesTexto() {
     });
   });
 
+  // Texto Webflow e Animate-me
+  document.fonts.ready.then(() => {
+    if (document.querySelector(".animate-me")) {
+      let split = SplitText.create(".animate-me", {
+        type: "words",
+        aria: "hidden",
+      });
+      gsap.from(split.words, {
+        opacity: 0,
+        duration: 0.5,
+        ease: "sine.out",
+        stagger: 0.1,
+      });
+    }
+  });
+
   gsap.from(".texto-webflow", { opacity: 0, x: 100, duration: 1 });
 }
 
