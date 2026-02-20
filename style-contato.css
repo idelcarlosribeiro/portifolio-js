@@ -25,7 +25,10 @@
 .container-form{
     width: 700px;
     height: 600px;
-    background-color: antiquewhite;
+    background-image: url(img/Frame\ 31.svg);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
     z-index: 2;
     border-radius: 20px;
     
