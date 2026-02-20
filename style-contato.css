@@ -1,0 +1,32 @@
+.container-contato{
+    width: 100%;
+    min-height: 500px;
+    height: 100dvh;
+    background-image: url(img/pexels-adrien-olichon-1257089-2387533.webp);
+    background-size: cover;
+    background-repeat: no-repeat;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    -webkit-user-select: none;
+    -ms-user-select: none; 
+    user-select: none;  
+    overflow: hidden;
+}
+.container-contato::after{
+    width: 100%;
+    height: 100%;
+    content: "";
+    background-color: rgba(0, 0, 0, 0.64);
+    position: absolute;
+}
+
+.container-form{
+    width: 700px;
+    height: 600px;
+    background-color: antiquewhite;
+    z-index: 2;
+    border-radius: 20px;
+    
+}
