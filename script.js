@@ -508,3 +508,52 @@ swup.hooks.on("content:replace", () => {
   window.scrollTo(0, 0);
   init(); // Roda toda a lógica novamente para o novo HTML
 });
+
+
+
+
+//formatção do numero do form
+    const form = document.getElementById('meuFormulario');
+    const inputTelefone = document.getElementById('telefone');
+    const msgErro = document.getElementById('erro-telefone');
+
+    // 1. Mantém a máscara/formatação enquanto digita
+    inputTelefone.addEventListener('input', function (e) {
+        let value = e.target.value.replace(/\D/g, ''); 
+        if (value.length > 11) value = value.slice(0, 11);
+
+        value = value.replace(/^(\d{2})(\d)/g, '($1) $2'); 
+        value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+        e.target.value = value;
+
+        // Esconde a mensagem de erro enquanto o usuário volta a digitar
+        msgErro.style.display = 'none';
+    });
+
+    // 2. Validação ao tentar enviar o formulário
+    form.addEventListener('submit', function (event) {
+        // Remove tudo que não é número para contar os dígitos reais
+        const apenasNumeros = inputTelefone.value.replace(/\D/g, '');
+
+        // Verifica se tem pelo menos 10 dígitos (DDD + 8 números)
+        if (apenasNumeros.length < 10) {
+            // Impede o envio do formulário
+            event.preventDefault(); 
+            
+            // Mostra a mensagem de erro
+            msgErro.textContent = "Número de telefone incompleto";
+            msgErro.style.display = 'block';
+            
+            // Dá foco ao campo para o usuário corrigir
+            inputTelefone.focus();
+        }
+    });
+const emailInput = document.getElementById("email");
+
+emailInput.addEventListener("input", function () {
+  if (emailInput.value.includes("@")) {
+    emailInput.setCustomValidity(""); // E-mail válido
+  } else {
+    emailInput.setCustomValidity("O E-mail deve conter @"); // E-mail inválido
+  }
+});
