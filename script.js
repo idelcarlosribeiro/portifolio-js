@@ -27,32 +27,21 @@ let lenis;
 function init() {
   console.log("🚀 Inicializando scripts...");
 
-  // 1. REGISTRO DE PLUGINS E EASES
+  // 1. REGISTRO DE PLUGINS
   gsap.registerPlugin(SplitText, CustomEase, ScrollTrigger);
-  CustomEase.create("hop", ".8, 0, .3, 1");
-  CustomEase.create("menuHop", ".87, 0, .13, 1");
+  // ... (seus eases)
 
-  // 2. CONFIGURAÇÃO DO LENIS (Scroll Suave)
-  if (lenis) lenis.destroy();
-
-  lenis = new Lenis({
-    duration: 1.2,
-    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    smooth: true,
-  });
-
-  lenis.on("scroll", ScrollTrigger.update);
-
-  gsap.ticker.remove(lenisRaf);
-  gsap.ticker.add(lenisRaf);
-  gsap.ticker.lagSmoothing(0);
+  // 2. CONFIGURAÇÃO DO LENIS
+  // ... (seu código do lenis)
 
   // 3. EXECUÇÃO DOS MÓDULOS
-  runIntroducao();
+  runIntroducao(); // A intro decide se roda ou se esconde
   runNavegacao();
   runConhecimento();
   runFuncionalidades();
   runEfeitosScroll();
+  runFormulario();
+  iniciarAnimacoesTexto();
 
   // 4. ATUALIZAÇÃO FINAL
   ScrollTrigger.refresh();
@@ -509,51 +498,51 @@ swup.hooks.on("content:replace", () => {
   init(); // Roda toda a lógica novamente para o novo HTML
 });
 
-
-
-
 //formatção do numero do form
-    const form = document.getElementById('meuFormulario');
-    const inputTelefone = document.getElementById('telefone');
-    const msgErro = document.getElementById('erro-telefone');
+function runFormulario() {
+  const form = document.getElementById("meuFormulario");
+  const inputTelefone = document.getElementById("telefone");
+  const msgErro = document.getElementById("erro-telefone");
+  const emailInput = document.getElementById("email");
 
-    // 1. Mantém a máscara/formatação enquanto digita
-    inputTelefone.addEventListener('input', function (e) {
-        let value = e.target.value.replace(/\D/g, ''); 
-        if (value.length > 11) value = value.slice(0, 11);
+  // Verifica se os elementos existem na página atual (evita erros no console)
+  if (!inputTelefone || !form) return;
 
-        value = value.replace(/^(\d{2})(\d)/g, '($1) $2'); 
-        value = value.replace(/(\d)(\d{4})$/, '$1-$2');
-        e.target.value = value;
+  // 1. Mantém a máscara/formatação e remove letras
+  inputTelefone.addEventListener("input", function (e) {
+    // O replace(/\D/g, '') garante que apenas números fiquem no valor
+    let value = e.target.value.replace(/\D/g, "");
 
-        // Esconde a mensagem de erro enquanto o usuário volta a digitar
-        msgErro.style.display = 'none';
+    if (value.length > 11) value = value.slice(0, 11);
+
+    value = value.replace(/^(\d{2})(\d)/g, "($1) $2");
+    value = value.replace(/(\d)(\d{4})$/, "$1-$2");
+    e.target.value = value;
+
+    if (msgErro) msgErro.style.display = "none";
+  });
+
+  // 2. Validação ao enviar
+  form.addEventListener("submit", function (event) {
+    const apenasNumeros = inputTelefone.value.replace(/\D/g, "");
+    if (apenasNumeros.length < 10) {
+      event.preventDefault();
+      if (msgErro) {
+        msgErro.textContent = "Número de telefone incompleto";
+        msgErro.style.display = "block";
+      }
+      inputTelefone.focus();
+    }
+  });
+
+  // 3. Validação do E-mail
+  if (emailInput) {
+    emailInput.addEventListener("input", function () {
+      if (emailInput.value.includes("@")) {
+        emailInput.setCustomValidity("");
+      } else {
+        emailInput.setCustomValidity("O E-mail deve conter @");
+      }
     });
-
-    // 2. Validação ao tentar enviar o formulário
-    form.addEventListener('submit', function (event) {
-        // Remove tudo que não é número para contar os dígitos reais
-        const apenasNumeros = inputTelefone.value.replace(/\D/g, '');
-
-        // Verifica se tem pelo menos 10 dígitos (DDD + 8 números)
-        if (apenasNumeros.length < 10) {
-            // Impede o envio do formulário
-            event.preventDefault(); 
-            
-            // Mostra a mensagem de erro
-            msgErro.textContent = "Número de telefone incompleto";
-            msgErro.style.display = 'block';
-            
-            // Dá foco ao campo para o usuário corrigir
-            inputTelefone.focus();
-        }
-    });
-const emailInput = document.getElementById("email");
-
-emailInput.addEventListener("input", function () {
-  if (emailInput.value.includes("@")) {
-    emailInput.setCustomValidity(""); // E-mail válido
-  } else {
-    emailInput.setCustomValidity("O E-mail deve conter @"); // E-mail inválido
   }
-});
+}
