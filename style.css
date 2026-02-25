@@ -12,13 +12,12 @@
 .transition-fade {
     transition: .5s;
     opacity: 1;
-   
-}
-/* Estado durante a troca (Swup adiciona essa classe no HTML) */
-html.is-animating .transition-fade {
+  }
+  /* Estado durante a troca (Swup adiciona essa classe no HTML) */
+  html.is-animating .transition-fade {
     opacity: 0;
-    
-   
+    transform: translateY(500px);
+    scale: .6;
 }
 
 * {
@@ -1359,8 +1358,8 @@ footer{
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 1.3vw;
-  height: 1.3vw;
+  width: 2.3vw;
+  height: 1.5vw;
 }
 .redesocial img{
   width: 100%;
@@ -1698,6 +1697,8 @@ footer{
     .texto-copyrat{ flex-direction: column;}
     .texto-copyrat p { font-size: .7em;}
     .redesocial-copirat {justify-content: left; margin-top: 20px;}
+
+    .redesocial{ width: 20px; height: 20px;}
 
 }
 

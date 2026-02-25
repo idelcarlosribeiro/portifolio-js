@@ -73,12 +73,11 @@ function init() {
   }, 100);
 }
 
-// --- MÓDULO 1: INTRODUÇÃO ---
+// --- MÓDULO 1: INTRODUÇÃO (SUA VERSÃO ORIGINAL APLICADA) ---
 function runIntroducao() {
   const introducaoElement = document.querySelector(".introducao");
 
-  // CORREÇÃO AQUI: Se não tem introdução nesta página (páginas internas),
-  // roda a animação de texto imediatamente e encerra a função.
+  // Se não tem introdução nesta página, roda a animação de texto imediatamente
   if (!introducaoElement) {
     console.log("⏩ Página sem introdução. Iniciando animações de texto.");
     iniciarAnimacoesTexto();
@@ -101,7 +100,6 @@ function runIntroducao() {
       clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
     });
 
-    // Inicia a animação de texto imediatamente
     iniciarAnimacoesTexto();
     return;
   }
@@ -113,7 +111,6 @@ function runIntroducao() {
 
   introducaoElement.classList.add("executar-animacao");
 
-  // Helpers de SplitText
   const splitTextElements = (
     selector,
     type = "words, chars",
@@ -147,7 +144,6 @@ function runIntroducao() {
     onStart: () => body.classList.add("lock-scroll"),
   });
 
-  // Configuração inicial
   gsap.set(
     [
       ".split-overlay .intro-title .first-char span",
@@ -167,7 +163,6 @@ function runIntroducao() {
     fontWeight: "500",
   });
 
-  // Sequência da Animação
   tags.forEach((tag, index) => {
     tl.to(
       tag.querySelectorAll("p .word"),
@@ -232,9 +227,7 @@ function runIntroducao() {
         duration: 1,
         onComplete: () => {
           body.classList.remove("lock-scroll");
-
-          // Animações de texto disparam apenas quando a tela principal se revela
-          iniciarAnimacoesTexto();
+          iniciarAnimacoesTexto(); // DISPARO PERFEITO
           ScrollTrigger.refresh();
         },
       },
@@ -262,7 +255,7 @@ function runIntroducao() {
     );
 }
 
-// --- MÓDULO DE ANIMAÇÕES DE TEXTO ---
+// --- MÓDULO DE ANIMAÇÕES DE TEXTO (SUA VERSÃO ORIGINAL) ---
 function iniciarAnimacoesTexto() {
   const elementos = document.querySelectorAll(".split-animar");
   elementos.forEach((el) => {
@@ -334,6 +327,10 @@ function runNavegacao() {
     if (lenis) lenis.stop();
 
     const tl = gsap.timeline();
+
+    // CORREÇÃO: Reseta a opacidade do container de volta a 1 antes de abrir
+    gsap.set(copyContainers, { opacity: 1 });
+
     tl.to(menuToggleLabel, { y: "-110%", duration: 1, ease: "menuHop" }).to(
       menuOverlay,
       {
@@ -377,6 +374,7 @@ function runNavegacao() {
         "<",
       )
       .to(menuToggleLabel, { y: "0%", duration: 1, ease: "menuHop" }, "<")
+      // Opacidade fica 0.25 aqui no fechamento (já corrigido na hora de abrir logo acima)
       .to(copyContainers, { opacity: 0.25, duration: 1, ease: "menuHop" }, "<")
       .call(() => {
         splitTextByContainer.forEach((splits) => {
@@ -457,19 +455,9 @@ function runFuncionalidades() {
     });
   }
 
-  document
-    .querySelectorAll(".cards-perguntas h3")
-    .forEach((h) =>
-      h.addEventListener("click", () =>
-        h.parentElement.classList.toggle("ocultar"),
-      ),
-    );
   document.querySelectorAll(".faq-header").forEach((h) =>
     h.addEventListener("click", () => {
       const item = h.parentElement;
-      document
-        .querySelectorAll(".faq-item")
-        .forEach((o) => o !== item && o.classList.remove("aberto"));
       item.classList.toggle("aberto");
     }),
   );
@@ -505,8 +493,6 @@ function runEfeitosScroll() {
 function runFormulario() {
   const form = document.getElementById("meuFormulario");
   const inputTelefone = document.getElementById("telefone");
-  const msgErro = document.getElementById("erro-telefone");
-  const emailInput = document.getElementById("email");
 
   if (!inputTelefone || !form) return;
 
@@ -516,34 +502,13 @@ function runFormulario() {
     value = value.replace(/^(\d{2})(\d)/g, "($1) $2");
     value = value.replace(/(\d)(\d{4})$/, "$1-$2");
     e.target.value = value;
-    if (msgErro) msgErro.style.display = "none";
   });
-
-  form.addEventListener("submit", function (event) {
-    const apenasNumeros = inputTelefone.value.replace(/\D/g, "");
-    if (apenasNumeros.length < 10) {
-      event.preventDefault();
-      if (msgErro) {
-        msgErro.textContent = "Número de telefone incompleto";
-        msgErro.style.display = "block";
-      }
-      inputTelefone.focus();
-    }
-  });
-
-  if (emailInput) {
-    emailInput.addEventListener("input", function () {
-      if (emailInput.value.includes("@")) emailInput.setCustomValidity("");
-      else emailInput.setCustomValidity("O E-mail deve conter @");
-    });
-  }
 }
 
 // =========================================================
 // CONTROLE DE CICLO DE VIDA (SWUP)
 // =========================================================
 
-// 1. CARREGAMENTO INICIAL
 if (
   document.readyState === "complete" ||
   document.readyState === "interactive"
@@ -553,15 +518,13 @@ if (
   document.addEventListener("DOMContentLoaded", init);
 }
 
-// 2. LIMPEZA ANTES DE SAIR DA PÁGINA
 swup.hooks.on("visit:start", () => {
-  if (lenis) lenis.stop(); // Pausa o motor do scroll suave
-  ScrollTrigger.getAll().forEach((t) => t.kill()); // Mata todos os gatilhos antigos
+  if (lenis) lenis.stop();
+  ScrollTrigger.getAll().forEach((t) => t.kill());
 });
 
-// 3. REINICIALIZAÇÃO QUANDO A PÁGINA TROCA
 swup.hooks.on("content:replace", () => {
-  window.scrollTo(0, 0); // Volta ao topo da página nativamente
-  if (lenis) lenis.scrollTo(0, { immediate: true }); // Garante que o Lenis também inicie do topo
-  init(); // Roda toda a lógica novamente para o novo HTML
+  window.scrollTo(0, 0);
+  if (lenis) lenis.scrollTo(0, { immediate: true });
+  init();
 });
