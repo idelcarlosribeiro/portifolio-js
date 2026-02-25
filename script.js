@@ -2,23 +2,42 @@
 import Swup from "https://unpkg.com/swup@4?module";
 import SwupHeadPlugin from "https://unpkg.com/@swup/head-plugin@2?module";
 
+// Variável global para o Lenis
+let lenis;
+
+// --- CONFIGURAÇÃO DO LENIS (O "motor" do scroll suave) ---
+function setupLenis() {
+  if (lenis) {
+    lenis.destroy();
+  }
+
+  lenis = new Lenis({
+    duration: 1.2,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    smoothWheel: true,
+  });
+
+  lenis.on("scroll", ScrollTrigger.update);
+
+  function raf(time) {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
+
+  requestAnimationFrame(raf);
+}
+
 // 2. Configure o Swup com o plugin
 const swup = new Swup({
   containers: ["#swup"],
   cache: false,
   plugins: [
     new SwupHeadPlugin({
-      // Isso diz ao plugin para persistir (NÃO remover) o CSS principal,
-      // mas trocar os outros. Ajuste conforme necessário.
-      // Se quiser trocar tudo, pode deixar vazio: new SwupHeadPlugin()
       persistTags: (tag) =>
         tag.rel === "stylesheet" && tag.href.includes("style-global.css"),
     }),
   ],
 });
-
-// Variável global para o Lenis
-let lenis;
 
 /**
  * FUNÇÃO MESTRE: Inicializa todo o site.
@@ -29,36 +48,44 @@ function init() {
 
   // 1. REGISTRO DE PLUGINS
   gsap.registerPlugin(SplitText, CustomEase, ScrollTrigger);
-  // ... (seus eases)
 
-  // 2. CONFIGURAÇÃO DO LENIS
-  // ... (seu código do lenis)
+  // Eases customizados
+  CustomEase.create(
+    "hop",
+    "M0,0 C0.355,0.022 0.448,0.079 0.5,0.5 0.542,0.846 0.615,1 1,1",
+  );
+  CustomEase.create("menuHop", "M0,0 C0.1,0 0.2,1 1,1");
+
+  // 2. INICIALIZAR LENIS
+  setupLenis();
 
   // 3. EXECUÇÃO DOS MÓDULOS
-  runIntroducao(); // A intro decide se roda ou se esconde
+  runIntroducao(); // A intro decide se roda a intro ou se chama o texto direto
   runNavegacao();
   runConhecimento();
   runFuncionalidades();
   runEfeitosScroll();
   runFormulario();
-  iniciarAnimacoesTexto();
 
   // 4. ATUALIZAÇÃO FINAL
-  ScrollTrigger.refresh();
+  setTimeout(() => {
+    ScrollTrigger.refresh();
+  }, 100);
 }
 
-function lenisRaf(time) {
-  if (lenis) lenis.raf(time * 1000);
-}
-
-// --- MÓDULO 1: INTRODUÇÃO (VERSÃO "UMA VEZ POR SESSÃO") ---
+// --- MÓDULO 1: INTRODUÇÃO ---
 function runIntroducao() {
   const introducaoElement = document.querySelector(".introducao");
-  if (!introducaoElement) return;
+
+  // CORREÇÃO AQUI: Se não tem introdução nesta página (páginas internas),
+  // roda a animação de texto imediatamente e encerra a função.
+  if (!introducaoElement) {
+    console.log("⏩ Página sem introdução. Iniciando animações de texto.");
+    iniciarAnimacoesTexto();
+    return;
+  }
 
   const body = document.body;
-
-  // Verifica se já rodou nesta aba (sessionStorage) ou nesta navegação (window)
   const jaViuIntro =
     sessionStorage.getItem("introExecutada") || window.introConcluida;
   const navEntries = performance.getEntriesByType("navigation");
@@ -70,19 +97,19 @@ function runIntroducao() {
     introducaoElement.style.display = "none";
     body.classList.remove("lock-scroll");
 
-    // Força o estado final dos elementos da página
     gsap.set(".testt", {
       clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
     });
 
+    // Inicia a animação de texto imediatamente
     iniciarAnimacoesTexto();
-    return; // Encerra a função aqui
+    return;
   }
 
   // Se chegou aqui, é a primeira vez ou F5
   console.log("🎬 Iniciando animação de introdução...");
   sessionStorage.setItem("introExecutada", "true");
-  window.introConcluida = true; // Trava para trocas de página via Swup
+  window.introConcluida = true;
 
   introducaoElement.classList.add("executar-animacao");
 
@@ -111,7 +138,6 @@ function runIntroducao() {
   splitTextElements(".intro-title h1", "words, chars", true);
   splitTextElements(".outro-title h1");
   splitTextElements(".tag p", "words");
-  splitTextElements(".card h1", "words, chars", true);
 
   const isMobile = window.innerWidth < 1000;
   const tags = gsap.utils.toArray(".tag");
@@ -206,6 +232,8 @@ function runIntroducao() {
         duration: 1,
         onComplete: () => {
           body.classList.remove("lock-scroll");
+
+          // Animações de texto disparam apenas quando a tela principal se revela
           iniciarAnimacoesTexto();
           ScrollTrigger.refresh();
         },
@@ -234,37 +262,39 @@ function runIntroducao() {
     );
 }
 
+// --- MÓDULO DE ANIMAÇÕES DE TEXTO ---
 function iniciarAnimacoesTexto() {
   const elementos = document.querySelectorAll(".split-animar");
   elementos.forEach((el) => {
     const split = new SplitText(el, { type: "chars, words" });
     gsap.set(el, { opacity: 1, visibility: "visible" });
+
     gsap.from(split.chars, {
-      scrollTrigger: { trigger: el, start: "top 85%", once: true },
+      scrollTrigger: {
+        trigger: el,
+        start: "top 85%",
+        once: true,
+      },
       duration: 1,
       y: 100,
       opacity: 0,
       stagger: 0.05,
       ease: "expo.out",
-      onComplete: () => split.revert(),
+      onComplete: () => {
+        split.revert();
+      },
     });
   });
 
-  // Texto Webflow e Animate-me
-  document.fonts.ready.then(() => {
-    if (document.querySelector(".animate-me")) {
-      let split = SplitText.create(".animate-me", {
-        type: "words",
-        aria: "hidden",
-      });
-      gsap.from(split.words, {
-        opacity: 0,
-        duration: 0.5,
-        ease: "sine.out",
-        stagger: 0.1,
-      });
-    }
-  });
+  if (document.querySelector(".animate-me")) {
+    let split = new SplitText(".animate-me", { type: "words" });
+    gsap.from(split.words, {
+      opacity: 0,
+      duration: 0.5,
+      ease: "sine.out",
+      stagger: 0.1,
+    });
+  }
 
   gsap.from(".texto-webflow", { opacity: 0, x: 100, duration: 1 });
 }
@@ -276,21 +306,19 @@ function runNavegacao() {
 
   const container = document.querySelector(".container");
   const menuOverlay = document.querySelector(".menu-overlay");
-  const menuOverlayContainer = document.querySelector(".menu-overlay-content");
-  const menuMediaWrapper = document.querySelector(".menu-media-warapper");
-  const copyContainers = document.querySelectorAll(".menu-col");
   const menuToggleLabel = document.querySelector(".menu-toggle-label p");
   const hamburgerIcon = document.querySelector(".menu-hamburger-icon");
+  const copyContainers = document.querySelectorAll(".menu-col");
 
   let isMenuOpen = false;
   let isAnimating = false;
   let splitTextByContainer = [];
 
-  copyContainers.forEach((container) => {
-    const textElements = container.querySelectorAll("a, p");
+  copyContainers.forEach((col) => {
+    const textElements = col.querySelectorAll("a, p");
     let containerSplits = [];
     textElements.forEach((element) => {
-      const split = SplitText.create(element, {
+      const split = new SplitText(element, {
         type: "lines",
         linesClass: "line",
       });
@@ -299,35 +327,6 @@ function runNavegacao() {
     });
     splitTextByContainer.push(containerSplits);
   });
-
-  const fecharMenu = () => {
-    if (isAnimating || !isMenuOpen) return;
-    isAnimating = true;
-    hamburgerIcon.classList.remove("active");
-
-    const tl = gsap.timeline();
-    tl.to(container, { opacity: 1, duration: 0.9, ease: "menuHop" })
-      .to(
-        menuOverlay,
-        {
-          clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
-          duration: 1,
-          ease: "menuHop",
-        },
-        "<",
-      )
-      .to(menuToggleLabel, { y: "0%", duration: 1, ease: "menuHop" }, "<")
-      .to(copyContainers, { opacity: 0.25, duration: 1, ease: "menuHop" }, "<")
-      .call(() => {
-        splitTextByContainer.forEach((splits) => {
-          const lines = splits.flatMap((s) => s.lines);
-          gsap.set(lines, { y: "-110%" });
-        });
-        isAnimating = false;
-        isMenuOpen = false;
-        if (lenis) lenis.start();
-      });
-  };
 
   const abrirMenu = () => {
     if (isAnimating || isMenuOpen) return;
@@ -359,6 +358,35 @@ function runNavegacao() {
       isAnimating = false;
       isMenuOpen = true;
     });
+  };
+
+  const fecharMenu = () => {
+    if (isAnimating || !isMenuOpen) return;
+    isAnimating = true;
+    hamburgerIcon.classList.remove("active");
+
+    const tl = gsap.timeline();
+    tl.to(container, { opacity: 1, duration: 0.9, ease: "menuHop" })
+      .to(
+        menuOverlay,
+        {
+          clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
+          duration: 1,
+          ease: "menuHop",
+        },
+        "<",
+      )
+      .to(menuToggleLabel, { y: "0%", duration: 1, ease: "menuHop" }, "<")
+      .to(copyContainers, { opacity: 0.25, duration: 1, ease: "menuHop" }, "<")
+      .call(() => {
+        splitTextByContainer.forEach((splits) => {
+          const lines = splits.flatMap((s) => s.lines);
+          gsap.set(lines, { y: "-110%" });
+        });
+        isAnimating = false;
+        isMenuOpen = false;
+        if (lenis) lenis.start();
+      });
   };
 
   menuToggleBtn.addEventListener("click", () =>
@@ -473,6 +501,44 @@ function runEfeitosScroll() {
   }
 }
 
+// --- MÓDULO 6: FORMULÁRIO ---
+function runFormulario() {
+  const form = document.getElementById("meuFormulario");
+  const inputTelefone = document.getElementById("telefone");
+  const msgErro = document.getElementById("erro-telefone");
+  const emailInput = document.getElementById("email");
+
+  if (!inputTelefone || !form) return;
+
+  inputTelefone.addEventListener("input", function (e) {
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length > 11) value = value.slice(0, 11);
+    value = value.replace(/^(\d{2})(\d)/g, "($1) $2");
+    value = value.replace(/(\d)(\d{4})$/, "$1-$2");
+    e.target.value = value;
+    if (msgErro) msgErro.style.display = "none";
+  });
+
+  form.addEventListener("submit", function (event) {
+    const apenasNumeros = inputTelefone.value.replace(/\D/g, "");
+    if (apenasNumeros.length < 10) {
+      event.preventDefault();
+      if (msgErro) {
+        msgErro.textContent = "Número de telefone incompleto";
+        msgErro.style.display = "block";
+      }
+      inputTelefone.focus();
+    }
+  });
+
+  if (emailInput) {
+    emailInput.addEventListener("input", function () {
+      if (emailInput.value.includes("@")) emailInput.setCustomValidity("");
+      else emailInput.setCustomValidity("O E-mail deve conter @");
+    });
+  }
+}
+
 // =========================================================
 // CONTROLE DE CICLO DE VIDA (SWUP)
 // =========================================================
@@ -489,60 +555,13 @@ if (
 
 // 2. LIMPEZA ANTES DE SAIR DA PÁGINA
 swup.hooks.on("visit:start", () => {
-  ScrollTrigger.killAll(); // Remove todos os gatilhos antigos
+  if (lenis) lenis.stop(); // Pausa o motor do scroll suave
+  ScrollTrigger.getAll().forEach((t) => t.kill()); // Mata todos os gatilhos antigos
 });
 
 // 3. REINICIALIZAÇÃO QUANDO A PÁGINA TROCA
 swup.hooks.on("content:replace", () => {
-  window.scrollTo(0, 0);
+  window.scrollTo(0, 0); // Volta ao topo da página nativamente
+  if (lenis) lenis.scrollTo(0, { immediate: true }); // Garante que o Lenis também inicie do topo
   init(); // Roda toda a lógica novamente para o novo HTML
 });
-
-//formatção do numero do form
-function runFormulario() {
-  const form = document.getElementById("meuFormulario");
-  const inputTelefone = document.getElementById("telefone");
-  const msgErro = document.getElementById("erro-telefone");
-  const emailInput = document.getElementById("email");
-
-  // Verifica se os elementos existem na página atual (evita erros no console)
-  if (!inputTelefone || !form) return;
-
-  // 1. Mantém a máscara/formatação e remove letras
-  inputTelefone.addEventListener("input", function (e) {
-    // O replace(/\D/g, '') garante que apenas números fiquem no valor
-    let value = e.target.value.replace(/\D/g, "");
-
-    if (value.length > 11) value = value.slice(0, 11);
-
-    value = value.replace(/^(\d{2})(\d)/g, "($1) $2");
-    value = value.replace(/(\d)(\d{4})$/, "$1-$2");
-    e.target.value = value;
-
-    if (msgErro) msgErro.style.display = "none";
-  });
-
-  // 2. Validação ao enviar
-  form.addEventListener("submit", function (event) {
-    const apenasNumeros = inputTelefone.value.replace(/\D/g, "");
-    if (apenasNumeros.length < 10) {
-      event.preventDefault();
-      if (msgErro) {
-        msgErro.textContent = "Número de telefone incompleto";
-        msgErro.style.display = "block";
-      }
-      inputTelefone.focus();
-    }
-  });
-
-  // 3. Validação do E-mail
-  if (emailInput) {
-    emailInput.addEventListener("input", function () {
-      if (emailInput.value.includes("@")) {
-        emailInput.setCustomValidity("");
-      } else {
-        emailInput.setCustomValidity("O E-mail deve conter @");
-      }
-    });
-  }
-}
