@@ -10,7 +10,7 @@
 /* No seu arquivo style.css */
 /* Estado normal */
 .transition-fade {
-    transition: .5s;
+    transition: 0.5s;
     opacity: 1;
   }
   /* Estado durante a troca (Swup adiciona essa classe no HTML) */

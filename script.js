@@ -210,28 +210,23 @@ function runIntroducao() {
         fontWeight: "500",
         duration: 0.75,
         onComplete: () => {
+          // 1. Aplica os cortes instantaneamente
           gsap.set(".preloader", {
             clipPath: "polygon(0 0, 100% 0, 100% 50%, 0 50%)",
           });
           gsap.set(".split-overlay", {
             clipPath: "polygon(0 50%, 100% 50%, 100% 100%, 0 100%)",
           });
+
+          // 2. Aguarda o tempo desejado (ex: 1 segundo) antes de disparar o resto
+          gsap.delayedCall(0.7, () => {
+            body.classList.remove("lock-scroll");
+            iniciarAnimacoesTexto(); // DISPARO PERFEITO COM ATRASO
+            ScrollTrigger.refresh();
+          });
         },
       },
       4.5,
-    )
-    .to(
-      ".tstt",
-      {
-        clipPath: "polygon(0% 48%, 100% 48%, 100% 52%, 0% 52%)",
-        duration: 1,
-        onComplete: () => {
-          body.classList.remove("lock-scroll");
-          iniciarAnimacoesTexto(); // DISPARO PERFEITO
-          ScrollTrigger.refresh();
-        },
-      },
-      5,
     );
 
   tags.forEach((tag, index) => {
@@ -248,11 +243,7 @@ function runIntroducao() {
     6,
   )
     .to(".introducao", { display: "none", duration: 1 }, 6)
-    .to(
-      ".testt",
-      { clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)", duration: 1 },
-      6,
-    );
+    
 }
 
 // --- MÓDULO DE ANIMAÇÕES DE TEXTO (SUA VERSÃO ORIGINAL) ---
@@ -289,7 +280,7 @@ function iniciarAnimacoesTexto() {
     });
   }
 
-  gsap.from(".texto-webflow", { opacity: 0, x: 100, duration: 1 });
+  
 }
 
 // --- MÓDULO 2: NAVEGAÇÃO ---
