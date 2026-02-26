@@ -2,13 +2,16 @@
 import Swup from "https://unpkg.com/swup@4?module";
 import SwupHeadPlugin from "https://unpkg.com/@swup/head-plugin@2?module";
 
-// Variável global para o Lenis
+// Variável global para o Lenis e para o ID do requestAnimationFrame
 let lenis;
+let lenisRafId;
 
 // --- CONFIGURAÇÃO DO LENIS (O "motor" do scroll suave) ---
 function setupLenis() {
   if (lenis) {
     lenis.destroy();
+    // CORREÇÃO CRÍTICA: Cancela o loop antigo do Lenis para não encavalar com o novo
+    cancelAnimationFrame(lenisRafId);
   }
 
   lenis = new Lenis({
@@ -21,10 +24,10 @@ function setupLenis() {
 
   function raf(time) {
     lenis.raf(time);
-    requestAnimationFrame(raf);
+    lenisRafId = requestAnimationFrame(raf);
   }
 
-  requestAnimationFrame(raf);
+  lenisRafId = requestAnimationFrame(raf);
 }
 
 // 2. Configure o Swup com o plugin
@@ -73,7 +76,7 @@ function init() {
   }, 100);
 }
 
-// --- MÓDULO 1: INTRODUÇÃO (SUA VERSÃO ORIGINAL APLICADA) ---
+// --- MÓDULO 1: INTRODUÇÃO ---
 function runIntroducao() {
   const introducaoElement = document.querySelector(".introducao");
 
@@ -85,13 +88,13 @@ function runIntroducao() {
   }
 
   const body = document.body;
-  const jaViuIntro =
-    sessionStorage.getItem("introExecutada") || window.introConcluida;
-  const navEntries = performance.getEntriesByType("navigation");
-  const isReload = navEntries.length > 0 && navEntries[0].type === "reload";
 
-  // Lógica de Bloqueio: Se já viu e não é F5, pula a intro
-  if (jaViuIntro && !isReload) {
+  // CORREÇÃO: Usamos apenas window.introConcluida.
+  // No Swup (navegação interna) o window se mantém. No F5 (reload), o window reseta para undefined.
+  const jaViuIntro = window.introConcluida;
+
+  // Lógica de Bloqueio: Se já viu, pula a intro
+  if (jaViuIntro) {
     console.log("⏩ Navegação interna detectada: Introdução suprimida.");
     introducaoElement.style.display = "none";
     body.classList.remove("lock-scroll");
@@ -106,8 +109,7 @@ function runIntroducao() {
 
   // Se chegou aqui, é a primeira vez ou F5
   console.log("🎬 Iniciando animação de introdução...");
-  sessionStorage.setItem("introExecutada", "true");
-  window.introConcluida = true;
+  window.introConcluida = true; // Salva na janela (reseta ao dar F5)
 
   introducaoElement.classList.add("executar-animacao");
 
@@ -241,12 +243,10 @@ function runIntroducao() {
     [".preloader", ".split-overlay"],
     { y: (i) => (i === 0 ? "-50%" : "50%"), duration: 1 },
     6,
-  )
-    .to(".introducao", { display: "none", duration: 1 }, 6)
-    
+  ).to(".introducao", { display: "none", duration: 1 }, 6);
 }
 
-// --- MÓDULO DE ANIMAÇÕES DE TEXTO (SUA VERSÃO ORIGINAL) ---
+// --- MÓDULO DE ANIMAÇÕES DE TEXTO ---
 function iniciarAnimacoesTexto() {
   const elementos = document.querySelectorAll(".split-animar");
   elementos.forEach((el) => {
@@ -279,14 +279,22 @@ function iniciarAnimacoesTexto() {
       stagger: 0.1,
     });
   }
-
-  
 }
+
+// Variáveis do menu colocadas fora para persistir estado,
+// mas arrays limpos por segurança.
+let isMenuOpen = false;
+let isAnimating = false;
+let splitTextByContainer = [];
 
 // --- MÓDULO 2: NAVEGAÇÃO ---
 function runNavegacao() {
   const menuToggleBtn = document.querySelector(".menu-toggle-btn");
   if (!menuToggleBtn) return;
+
+  // CORREÇÃO: Previne que o SplitText duplique os textos do menu se ele estiver fora do #swup
+  if (menuToggleBtn.dataset.navInicializada === "true") return;
+  menuToggleBtn.dataset.navInicializada = "true";
 
   const container = document.querySelector(".container");
   const menuOverlay = document.querySelector(".menu-overlay");
@@ -294,9 +302,8 @@ function runNavegacao() {
   const hamburgerIcon = document.querySelector(".menu-hamburger-icon");
   const copyContainers = document.querySelectorAll(".menu-col");
 
-  let isMenuOpen = false;
-  let isAnimating = false;
-  let splitTextByContainer = [];
+  // Garante que o array está limpo ao iniciar
+  splitTextByContainer = [];
 
   copyContainers.forEach((col) => {
     const textElements = col.querySelectorAll("a, p");
@@ -319,7 +326,6 @@ function runNavegacao() {
 
     const tl = gsap.timeline();
 
-    // CORREÇÃO: Reseta a opacidade do container de volta a 1 antes de abrir
     gsap.set(copyContainers, { opacity: 1 });
 
     tl.to(menuToggleLabel, { y: "-110%", duration: 1, ease: "menuHop" }).to(
@@ -365,7 +371,6 @@ function runNavegacao() {
         "<",
       )
       .to(menuToggleLabel, { y: "0%", duration: 1, ease: "menuHop" }, "<")
-      // Opacidade fica 0.25 aqui no fechamento (já corrigido na hora de abrir logo acima)
       .to(copyContainers, { opacity: 0.25, duration: 1, ease: "menuHop" }, "<")
       .call(() => {
         splitTextByContainer.forEach((splits) => {
@@ -517,5 +522,10 @@ swup.hooks.on("visit:start", () => {
 swup.hooks.on("content:replace", () => {
   window.scrollTo(0, 0);
   if (lenis) lenis.scrollTo(0, { immediate: true });
-  init();
+
+  // CORREÇÃO: Usar um requestAnimationFrame garante que o navegador renderize
+  // as novas tags HTML que o Swup acabou de injetar antes de o GSAP iniciar.
+  requestAnimationFrame(() => {
+    init();
+  });
 });
